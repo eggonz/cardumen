@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from abc import ABC
+from typing import Callable
 
 from schooling.config import RunConfig
 from schooling.utils.geometry import LocRotScale, Box
@@ -29,6 +30,11 @@ class EntityManager:
             for entity in self._layers[layer]:
                 entity.render(display)
 
+    def apply_to_all(self, func: Callable) -> None:
+        for layer in self._layers.values():
+            for entity in layer:
+                func(entity)
+
 
 class Entity(ABC):
     def __init__(self, position: LocRotScale, sprite: Sprite, bound_box: Box = None, *, eid: str = None):
@@ -43,8 +49,21 @@ class Entity(ABC):
         self._visible = True
         self._collider_enabled = True
 
+    def __del__(self):
+        _ENTITIES_BY_EID.pop(self._eid)
+
     def update(self, dt: float) -> None:
-        pass
+        if RunConfig.WRAP:
+            fish = Entity.get_by_eid('fish')
+            width, height = RunConfig.WINDOW_SIZE
+            if fish.position.x > width:
+                fish.position.x = fish.position.x - width
+            elif fish.position.x < 0:
+                fish.position.x = fish.position.x + width
+            if fish.position.y > height:
+                fish.position.y = fish.position.y - height
+            elif fish.position.y < 0:
+                fish.position.y = fish.position.y + height
 
     def render(self, display: Display) -> None:
         if RunConfig.DEBUG_MODE:
@@ -77,16 +96,3 @@ class Entity(ABC):
 
     def set_debug_color(self, value: Color) -> None:
         self._debug_color = value
-
-
-class BackgroundEntity(Entity):
-    def __init__(self, position: LocRotScale, sprite: Sprite, *, eid: str = None):
-        super().__init__(
-            position,
-            sprite,
-            eid,
-        )
-        self._collider_enabled = False
-
-    def set_collider_enabled(self, value: bool) -> None:
-        raise AttributeError

@@ -5,6 +5,10 @@ def rad2deg(rad: float) -> float:
     return rad * 360 / 2.0 / math.pi
 
 
+def deg2rad(deg: float) -> float:
+    return deg * 2.0 * math.pi / 360
+
+
 class LocRotScale:
     def __init__(self, x: float = 0, y: float = 0, angle: float = 0, scale: float = 1):
         self._orig_x = x
@@ -20,7 +24,7 @@ class LocRotScale:
         self.x += dx
         self.y += dy
 
-    def apply_rotation(self, d_angle: int) -> None:
+    def apply_rotation(self, d_angle: float) -> None:
         self.angle += d_angle
 
     def apply_scale(self, scale: float) -> None:

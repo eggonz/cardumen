@@ -3,7 +3,7 @@ import time
 
 from schooling.config import RuntimeContext, RunConfig
 from schooling.scene import Scene
-from schooling.utils.events import EventQueue
+from schooling.utils.events import Events
 from schooling.utils.graphics import Display
 
 
@@ -28,13 +28,13 @@ class App:
         self._render_thread.start()
 
         try:
-            EventQueue.init()
+            Events.init()
             while self.running:
                 # Read events
-                EventQueue.read()
+                Events.read()
 
                 # Check quit
-                if EventQueue.has_quit():
+                if Events.is_quit():
                     self.running = False
 
                 # Stability sleep

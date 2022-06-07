@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-import pygame as pygame
+import pygame
 
-from schooling.utils.geometry import LocRotScale, Box
+from schooling.config import RunConfig
+from schooling.utils.geometry import LocRotScale, Box, rad2deg
 
 
-def _rotate_surface(surface: pygame.Surface, angle: int) -> pygame.Surface:
-    return pygame.transform.rotate(surface, angle)
+def _rotate_surface(surface: pygame.Surface, angle: float) -> pygame.Surface:
+    return pygame.transform.rotate(surface, rad2deg(angle))
 
 
 def _scale_surface(surface: pygame.Surface, scale: float) -> pygame.Surface:
     return pygame.transform.smoothscale(surface, (surface.get_width() * scale, surface.get_height() * scale))
 
 
-def _rotate_scale_surface(surface: pygame.Surface, angle: int, scale: float) -> pygame.Surface:
+def _rotate_scale_surface(surface: pygame.Surface, angle: float, scale: float) -> pygame.Surface:
     if scale < 1.0:
         rotated = _rotate_surface(surface, angle)
         transformed = _scale_surface(rotated, scale)
@@ -55,10 +56,29 @@ class Display:
 
     def show(self) -> None:
         pygame.display.flip()
+        
+    def _draw_surface(self, surface: pygame.Surface, center: tuple) -> None:
+        self._screen.blit(surface, surface.get_rect(center=center))
+
+        if RunConfig.WRAP:
+            x, y = center
+            width, height = RunConfig.WINDOW_SIZE
+            surf_width, surf_height = surface.get_size()
+            if surf_width < width and surf_height < height:
+                self._screen.blit(surface, surface.get_rect(center=(x - width, y - height)))
+                self._screen.blit(surface, surface.get_rect(center=(x - width, y + height)))
+                self._screen.blit(surface, surface.get_rect(center=(x + width, y - height)))
+                self._screen.blit(surface, surface.get_rect(center=(x + width, y + height)))
+            if surf_width < width:
+                self._screen.blit(surface, surface.get_rect(center=(x - width, y)))
+                self._screen.blit(surface, surface.get_rect(center=(x + width, y)))
+            if surf_height < height:
+                self._screen.blit(surface, surface.get_rect(center=(x, y - height)))
+                self._screen.blit(surface, surface.get_rect(center=(x, y + height)))
 
     def draw_img(self, sprite: Sprite, loc_rot_scale: LocRotScale) -> None:
         new_img = _rotate_scale_surface(sprite.image, loc_rot_scale.angle, loc_rot_scale.scale)
-        self._screen.blit(new_img, new_img.get_rect(center=(loc_rot_scale.x, loc_rot_scale.y)))
+        self._draw_surface(new_img, (loc_rot_scale.x, loc_rot_scale.y))
 
     def draw_rect(self, box: Box, color: Color, loc_rot_scale: LocRotScale) -> None:
         surface = pygame.Surface((loc_rot_scale.scale * box.width,
@@ -71,9 +91,9 @@ class Display:
             loc_rot_scale.scale * box.height,
         )
         pygame.draw.rect(surface, color.get_rgb(), rect, width=1)
-        rotated_surface = pygame.transform.rotate(surface, loc_rot_scale.angle)
+        rotated_surface = _rotate_surface(surface, loc_rot_scale.angle)
         center = (loc_rot_scale.x, loc_rot_scale.y)
-        self._screen.blit(rotated_surface, rotated_surface.get_rect(center=center))
+        self._draw_surface(rotated_surface, center)
 
 
 class Sprite:
@@ -81,7 +101,7 @@ class Sprite:
         self._image = surface
 
     @classmethod
-    def from_image(cls, path: str, apply_rotation: int = 0, apply_scale: float = 1.0) -> Sprite:
+    def from_image(cls, path: str, apply_rotation: float = 0, apply_scale: float = 1.0) -> Sprite:
         loaded_img = pygame.image.load(path)
         surface = _rotate_scale_surface(loaded_img, apply_rotation, apply_scale)
         return cls(surface)
@@ -92,7 +112,7 @@ class Sprite:
         surface.fill(color.get_rgb())
         return cls(surface)
 
-    def apply_transform(self, apply_rotation: int = 0, apply_scale: float = 1.0) -> None:
+    def apply_transform(self, apply_rotation: float = 0, apply_scale: float = 1.0) -> None:
         self._image = _rotate_scale_surface(self._image, apply_rotation, apply_scale)
 
     @property

@@ -3,12 +3,19 @@ from enum import Enum
 import pygame
 
 
-class InputKey(Enum):
-    A = pygame.K_a
-
-
-class EventQueue:
+class Events:
     _queue = []
+    _quit = False
+
+    _keys_just_down = {}
+    _keys_just_up = {}
+    _keys_pressed = {}
+
+    class Key(Enum):
+        ARROW_RIGHT = pygame.K_RIGHT
+        ARROW_LEFT = pygame.K_LEFT
+
+    _all_keys = [key.value for key in Key]
 
     @staticmethod
     def init():
@@ -16,18 +23,28 @@ class EventQueue:
 
     @staticmethod
     def read() -> None:
-        EventQueue._queue = pygame.fastevent.get()
-
-    @staticmethod
-    def has_quit() -> bool:
-        for event in EventQueue._queue:
+        Events._queue = pygame.fastevent.get()
+        for event in Events._queue:
             if event.type == pygame.QUIT:
-                return True
-        return False
+                Events._quit = True
+
+            Events._keys_just_down = {}
+            Events._keys_just_up = {}
+
+            if event.type == pygame.KEYDOWN and event.key in Events._all_keys:
+                if not Events._keys_pressed.get(event.key, False):
+                    Events._keys_just_down[event.key] = True
+                Events._keys_pressed[event.key] = True
+
+            elif event.type == pygame.KEYUP and event.key in Events._all_keys:
+                if Events._keys_pressed.get(event.key, False):
+                    Events._keys_just_up[event.key] = True
+                Events._keys_pressed[event.key] = False
 
     @staticmethod
-    def has_key_pressed(key: InputKey) -> bool:
-        for event in EventQueue._queue:
-            if event.type == pygame.KEYDOWN and event.key == key.value:
-                return True
-        return False
+    def is_quit() -> bool:
+        return Events._quit
+
+    @staticmethod
+    def is_key_pressed(key: Key) -> bool:
+        return Events._keys_pressed.get(key.value, False)

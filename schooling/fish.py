@@ -1,28 +1,37 @@
-from schooling.config import RunConfig
-from schooling.entities import Entity, BackgroundEntity
-from schooling.utils.geometry import LocRotScale
+import math
+
+from schooling.entities import Entity
+from schooling.utils.events import Events
+from schooling.utils.geometry import LocRotScale, deg2rad
 from schooling.utils.graphics import Sprite
-
-
-class Water(BackgroundEntity):
-    def __init__(self, position: LocRotScale, *, eid: str = None):
-        sprite = Sprite.from_image('res/water.jpg')
-        # min: adjust content to screen
-        # max: adjust content to fill screen
-        scale = max(RunConfig.WINDOW_SIZE[0]/sprite.get_width(),
-                    RunConfig.WINDOW_SIZE[1]/sprite.get_height())
-        sprite.apply_transform(apply_scale=scale)
-        super().__init__(
-            position,
-            sprite,
-            eid=eid,
-        )
 
 
 class Fish(Entity):
     def __init__(self, position: LocRotScale, *, eid: str = None):
         super().__init__(
             position,
-            Sprite.from_image('res/fish1.png', apply_rotation=-90, apply_scale=.08),
+            Sprite.from_image('res/fish1.png', apply_rotation=deg2rad(-90), apply_scale=.08),
             eid=eid,
         )
+        self.speed = 200.0
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        if Events.is_key_pressed(Events.Key.ARROW_RIGHT):
+            self.tilt_right()
+        if Events.is_key_pressed(Events.Key.ARROW_LEFT):
+            self.tilt_left()
+        vx, vy = self.get_speed_vect()
+        self.position.x += vx * dt
+        self.position.y += vy * dt
+
+    def get_speed_vect(self) -> tuple:
+        speed_x = self.speed * math.cos(self.position.angle)
+        speed_y = - self.speed * math.sin(self.position.angle)
+        return speed_x, speed_y
+
+    def tilt_left(self) -> None:
+        self.position.apply_rotation(0.03)
+
+    def tilt_right(self) -> None:
+        self.position.apply_rotation(-0.03)
