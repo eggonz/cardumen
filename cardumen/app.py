@@ -9,7 +9,7 @@ import pygame
 from cardumen.display import Display
 from cardumen.scene import PlaygroundScene
 
-FPS = 64  # frames per sec
+FPS = 32  # frames per sec, 64
 SPF = 1.0 / FPS  # sec per frame
 UPDATE_RATE = 0.01  # sec
 WINDOW_SIZE = (1000, 600)

@@ -39,3 +39,6 @@ class PosRotScale:
         self.rot = rot
         self.scale = scale
 
+    def __repr__(self):
+        return f'PosRotScale(pos={self.pos},rot={self.rot},scale={self.scale})'
+
