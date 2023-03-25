@@ -32,12 +32,21 @@ class PosRotScale:
         Create a new PosRotScale object.
 
         :param pos: position of the object
-        :param rot: rotation of the object
+        :param rot: rotation of the object, in radians, positive counterclockwise
         :param scale: scale of the object
         """
         self.pos = pos
         self.rot = rot
         self.scale = scale
+
+    @property
+    def rot_deg(self) -> float:
+        """
+        Rotation of the object, in degrees, positive counterclockwise.
+
+        :return: rotation angle
+        """
+        return rad2deg(self.rot)
 
     def __repr__(self):
         return f'PosRotScale(pos={self.pos},rot={self.rot},scale={self.scale})'
