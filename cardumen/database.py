@@ -1,5 +1,6 @@
 import sqlite3
 import struct
+import time
 
 import numpy as np
 
@@ -144,14 +145,14 @@ class Database:
 
 
 class Table:
-    def __init__(self, db: Database, name: str):
+    def __init__(self, db: Database, name: str, data_format: str):
         self._db = db
         self.name = name
 
         self._bin_converter = BinaryConverter(
-            self._db.config[self.name].obj_type,
-            self._db.config[self.name].shape,
-            self._db.config[self.name].dtype,
+            self._db.config[data_format].obj_type,
+            self._db.config[data_format].shape,
+            self._db.config[data_format].dtype,
         )
 
         # create table

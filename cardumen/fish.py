@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 
+import numpy as np
 from pygame import Vector2
 
 from cardumen.control import Action, Agent
@@ -68,7 +69,7 @@ class Fish(Entity):
 
         self._shapes = [view, collider, sensor]
 
-        self.db_table = Table(self._handler.db, f"fish{cat}")
+        self.db_table = Table(self._handler.db, 'fish1', 'arr4')  # arrays perform best
 
     def update(self, dt: float) -> None:
         action = self._agent.act(self.get_state())
@@ -85,5 +86,5 @@ class Fish(Entity):
             for shape in self._shapes:
                 shape.render(display)
 
-    def get_state(self) -> list:
-        return [*self.prs.pos, *self.vel]
+    def get_state(self) -> object:
+        return np.array([*self.prs.pos, *self.vel])

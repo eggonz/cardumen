@@ -15,7 +15,7 @@ class Agent:
     def __init__(self, actions: list[Action]):
         self.actions = actions
 
-    def act(self, state: list) -> Action:
+    def act(self, state: object) -> Action:
         """
         Get action from agent.
         :param state: current state

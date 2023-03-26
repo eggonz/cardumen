@@ -3,27 +3,22 @@
     "bufferSize": 500
   },
   "dataFormats": {
-    "fish1": {
+    "list4": {
       "objType": "list",
       "shape": [4],
       "dtype": "float"
     },
-    "fish2": {
-      "objType": "list",
-      "shape": [4],
-      "dtype": "float"
-    },
-    "fish3": {
+    "arr4": {
       "objType": "array",
       "shape": [4],
       "dtype": "float"
     },
-    "fish4": {
+    "mat2x2": {
       "objType": "matrix",
       "shape": [2, 2],
       "dtype": "float"
     },
-    "fish5": {
+    "arr2x2": {
       "objType": "array",
       "shape": [2, 2],
       "dtype": "float"
