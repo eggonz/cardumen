@@ -1,7 +1,5 @@
 from collections import defaultdict
 
-from pygame import Vector2
-
 from cardumen.display import Display
 from cardumen.entities import WaterBg
 from cardumen.fish import Fish
@@ -11,14 +9,13 @@ from cardumen.handler import Handler
 
 class PlaygroundScene:
 
-    def __init__(self, handler: Handler, screen_size: tuple):
+    def __init__(self, handler: Handler):
         self._handler = handler
-        self._screen_size = Vector2(screen_size)
 
         self.layers = defaultdict(list)
 
-        water = WaterBg(handler, self._screen_size)
-        fish1 = Fish(handler, PosRotScale(self._screen_size/2))
+        water = WaterBg(handler, handler.display.screen_size)
+        fish1 = Fish(handler, PosRotScale(handler.display.screen_size/2))
         fish2 = Fish(handler, PosRotScale(), cat=2)
 
         self.layers[0].append(water)
@@ -36,14 +33,14 @@ class PlaygroundScene:
                 entity.update(dt)
 
                 # wrap every entity position
-                if entity.prs.pos.x > self._screen_size.x:
-                    entity.prs.pos.x -= self._screen_size.x
+                if entity.prs.pos.x > self._handler.display.screen_size.x:
+                    entity.prs.pos.x -= self._handler.display.screen_size.x
                 elif entity.prs.pos.x < 0:
-                    entity.prs.pos.x += self._screen_size.x
-                if entity.prs.pos.y > self._screen_size.y:
-                    entity.prs.pos.y -= self._screen_size.y
+                    entity.prs.pos.x += self._handler.display.screen_size.x
+                if entity.prs.pos.y > self._handler.display.screen_size.y:
+                    entity.prs.pos.y -= self._handler.display.screen_size.y
                 elif entity.prs.pos.y < 0:
-                    entity.prs.pos.y += self._screen_size.y
+                    entity.prs.pos.y += self._handler.display.screen_size.y
 
     def render(self, display: Display) -> None:
         """

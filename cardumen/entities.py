@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pygame import Vector2
 
-from cardumen.config import Config
 from cardumen.display import Display
 from cardumen.geometry import PosRotScale
 from cardumen.handler import Handler

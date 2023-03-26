@@ -1,0 +1,15 @@
+{
+  "width": 1000,
+  "height": 600,
+  "title": "cardumen",
+  "fps": 30,
+  "update_rate": 100,
+  "window_resizable": false,
+  "window_fullscreen": false,
+  "window_borderless": false,
+  "window_wrap": true,
+  "db_path": "cardumen.db",
+  "debug": true,
+  "testing": true,
+  "testing_db_path": "test.db"
+}

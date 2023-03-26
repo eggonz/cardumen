@@ -3,15 +3,61 @@ import struct
 
 import numpy as np
 
+from cardumen.config import DbConfig
+
 
 class BinaryConverter:
-    def __init__(self, obj_type: str):
+    def __init__(self, obj_type: str, shape: tuple, dtype: type):
         if obj_type not in {'array', 'list', 'matrix'}:
             raise NotImplementedError(f"Cannot convert {obj_type} to binary. "
                                       f"Only 'array', 'list' and 'matrix' are supported")
         self._obj_type = obj_type
+        self._shape = tuple(shape)
+        self._dtype = dtype
 
-    def to_binary(self, obj) -> bytes:
+    def check_validity(self, obj) -> None:
+        """
+        Check if the object is valid for the converter.
+        It checks object type, dtype and shape.
+        If the object type is 'matrix', it also checks if the matrix is rectangular.
+
+        :param obj: object to check
+        :return:
+        """
+        if self._obj_type == 'array':
+            if not isinstance(obj, np.ndarray):
+                raise TypeError(f"Invalid type. Expected {np.ndarray}, got {type(obj)}")
+            if obj.dtype != self._dtype:
+                raise TypeError(f"Invalid dtype. Expected {self._dtype}, got {obj.dtype}")
+            if obj.shape != self._shape:
+                raise TypeError(f"Invalid shape. Expected {self._shape}, got {obj.shape}")
+        elif self._obj_type == 'list':
+            if not isinstance(obj, list):
+                raise TypeError(f"Invalid type. Expected {list}, got {type(obj)}")
+            if not all(isinstance(item, self._dtype) for item in obj):
+                raise TypeError(f"Invalid dtype. Expected {self._dtype}, got {type(obj[0])}")
+            shape = (len(obj),)
+            if shape != self._shape:
+                raise TypeError(f"Invalid size. Expected {self._shape}, got {shape}")
+        elif self._obj_type == 'matrix':
+            if not isinstance(obj, list):
+                raise TypeError(f"Invalid type. Expected {list}, got {type(obj)}")
+            col_len = len(obj[0])
+            for row in obj:
+                if not isinstance(row, list):
+                    raise TypeError(f"Invalid type. Expected {list}, got {type(row)}")
+                if not all(isinstance(item, self._dtype) for item in row):
+                    raise TypeError(f"Invalid dtype. Expected {self._dtype}, got {type(row[0])}")
+                if len(row) != col_len:
+                    raise TypeError(f"Invalid shape. Expected rectangular matrix.")
+            shape = (len(obj), col_len)
+            if shape != self._shape:
+                raise TypeError(f"Invalid shape. Expected {self._shape}, got {shape}")
+        else:
+            raise TypeError(f"Invalid type. Expected {self._obj_type}, got {type(obj)}")
+
+    def to_bytes(self, obj) -> bytes:  # TODO measure latency of each obj type
+        self.check_validity(obj)  # TODO measure latency of validity method
         if self._obj_type == 'array':
             return self._array2binary(obj)
         elif self._obj_type == 'list':
@@ -20,7 +66,7 @@ class BinaryConverter:
             return self._matrix2binary(obj)
         raise TypeError(f"Cannot convert {type(obj)} to binary")
 
-    def from_binary(self, obj_bytes: bytes) -> object:
+    def from_bytes(self, obj_bytes: bytes) -> object:
         if self._obj_type == 'array':
             return self._binary2array(obj_bytes)
         elif self._obj_type == 'list':
@@ -30,18 +76,15 @@ class BinaryConverter:
         raise TypeError(f"Cannot convert binary to {self._obj_type}")
 
     def _array2binary(self, arr: np.ndarray) -> bytes:
-        self._dtype = arr.dtype
         arr_bytes = arr.tobytes()
         return arr_bytes
 
     def _list2binary(self, lst: list) -> bytes:
-        self._size = len(lst)
-        lst_bytes = struct.pack('f' * len(lst), *[float(it) for it in lst])
+        lst_bytes = struct.pack('f' * self._shape[0], *[float(it) for it in lst])
         return lst_bytes
 
     def _matrix2binary(self, mat: list[list]) -> bytes:
-        self._shape = (len(mat), len(mat[0]))
-        mat_bytes = struct.pack('f' * len(mat) * len(mat[0]), *[float(item) for row in mat for item in row])
+        mat_bytes = struct.pack('f' * self._shape[0] * self._shape[1], *[float(item) for row in mat for item in row])
         return mat_bytes
 
     def _binary2array(self, arr_bytes: bytes) -> np.ndarray:
@@ -51,7 +94,7 @@ class BinaryConverter:
     def _binary2list(self, lst_bytes: bytes) -> list:
         # lst = list(struct.unpack('f' * (len(lst_bytes) // self._size), lst_bytes))
         # lst = list(struct.unpack('f' * len(lst_bytes), lst_bytes))
-        lst = list(struct.unpack('f' * self._size, lst_bytes))
+        lst = list(struct.unpack('f' * self._shape[0], lst_bytes))
         return lst
 
     def _binary2matrix(self, mat_bytes: bytes) -> list[list]:
@@ -62,60 +105,76 @@ class BinaryConverter:
 
 
 class Database:
-    def __init__(self, path: str, bin_converter: BinaryConverter, commit_freq: int = 200):
+    def __init__(self, path: str):
         self.path = path
         self._db = None
         self._cursor = None
-        self._bin_converter = bin_converter
+        self.config = DbConfig("db_config.json")
 
-        self._commit_freq = commit_freq
-        self._num_items = 0
+        self._buffer_items = 0
 
     def connect(self):
         self._db = sqlite3.connect(self.path)
         self._cursor = self._db.cursor()
 
+    @property
+    def cursor(self):
+        return self._cursor
+
     def commit(self):
-        self._db.commit()
+        """Commit the database if the buffer is full."""
+        self._buffer_items += 1
+        if self._buffer_items >= self.config.BUFFER_SIZE:
+            print(f"Committing {self._buffer_items} items")
+            self._db.commit()
+            self._buffer_items = 0
 
     def close(self):
+        # commit remaining items
+        print(f"Committing {self._buffer_items} items")
+        self._db.commit()
+        self._buffer_items = 0
+
+        # close connection
         self._db.close()
         self._db = None
 
-    def _execute(self, query, params=()):
+    def execute(self, query, params=()):
         self._db.execute(query, params)
 
-    def create_table(self):
-        self._execute(f'CREATE TABLE data (time FLOAT, label INTEGER, arr BLOB)')
+
+class Table:
+    def __init__(self, db: Database, name: str):
+        self._db = db
+        self.name = name
+
+        self._bin_converter = BinaryConverter(
+            self._db.config[self.name].obj_type,
+            self._db.config[self.name].shape,
+            self._db.config[self.name].dtype,
+        )
+
+        # create table
+        self._db.execute(f'CREATE TABLE IF NOT EXISTS {self.name} (time FLOAT, state BLOB)')
+
         # Unnecessary primary key, slows down item insertion
-        # self._execute(f'CREATE TABLE data (id INTEGER PRIMARY KEY, time INTEGER, label INTEGER, arr BLOB)')
+        # self._execute(f'CREATE TABLE {self.name} (id INTEGER PRIMARY KEY, time FLOAT, state BLOB)')
         # Creating indices slows down item insertion
-        # self._execute(f'CREATE INDEX idx_label ON data (label)')
-        # self._execute(f'CREATE INDEX idx_time ON data (time)')
+        # self._execute(f'CREATE INDEX idx_label ON {self.name} (label)')
+        # self._execute(f'CREATE INDEX idx_time ON {self.name} (time)')
 
-    def add(self, time: float, label: int, arr):
-        bin_arr = self._bin_converter.to_binary(arr)
-        self._execute('INSERT INTO data (time, label, arr) VALUES (?, ?, ?)', (time, label, bin_arr))
-        self._num_items += 1
-        if self._num_items % self._commit_freq == 0:
-            print(f"Committing to database")
-            self.commit()
+    def add(self, time: float, state: object):
+        bin_arr = self._bin_converter.to_bytes(state)
+        self._db.execute(f'INSERT INTO {self.name} (time, state) VALUES (?, ?)', (time, bin_arr))
+        self._db.commit()
 
-    def get_all_label(self, label: int):
-        self._cursor.execute('SELECT * FROM data WHERE label = ?', (label,))
-        rows = self._cursor.fetchall()
-        arr = [(row[0], row[1], self._bin_converter.from_binary(row[3])) for i, row in enumerate(rows)]
-        return arr
+    def _format_items(self, items: list[tuple[float, object]]) -> list[tuple[float, bytes]]:
+        return [(time, self._bin_converter.to_bytes(state)) for time, state in items]
 
-    def get_all_timerange(self, start_time: float, end_time: float):
-        self._cursor.execute('SELECT * FROM data WHERE time BETWEEN ? AND ?', (start_time, end_time))
-        rows = self._cursor.fetchall()
-        arr = [(row[0], row[1], self._bin_converter.from_binary(row[3])) for i, row in enumerate(rows)]
-        return arr
+    def get_all(self):
+        self._db.cursor.execute(f'SELECT * FROM {self.name}')
+        return self._format_items(self._db.cursor.fetchall())  # TODO test gets, use check_validity
 
-    def get_all_label_timerange(self, label: int, start_time: float, end_time: float):
-        self._cursor.execute('SELECT * FROM data WHERE label = ? AND time BETWEEN ? AND ?',
-                             (label, start_time, end_time))
-        rows = self._cursor.fetchall()
-        arr = [(row[0], row[1], self._bin_converter.from_binary(row[3])) for i, row in enumerate(rows)]
-        return arr
+    def get_timerange(self, start_time: float, end_time: float):
+        self._db.cursor.execute(f'SELECT * FROM {self.name} WHERE time BETWEEN ? AND ?', (start_time, end_time))
+        return self._format_items(self._db.cursor.fetchall())  # TODO test gets, use check_validity

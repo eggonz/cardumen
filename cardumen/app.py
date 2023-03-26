@@ -1,20 +1,17 @@
 """
 Module containing the main application
 """
+import os
 import threading
 import time
 
 import pygame
 
-from cardumen.database import Database, BinaryConverter
+from cardumen.config import AppConfig
+from cardumen.database import Database
 from cardumen.display import Display
 from cardumen.handler import Handler
 from cardumen.scene import PlaygroundScene
-
-FPS = 32  # frames per sec, 64
-SPF = 1.0 / FPS  # sec per frame
-UPDATE_RATE = 1 / 100  # sec
-WINDOW_SIZE = (1000, 600)
 
 
 class App:
@@ -25,22 +22,27 @@ class App:
         Start app by initializing display and scene.
         Defines update and rendering threads.
         """
-        self._handler = Handler()
+        config = AppConfig('config.json')
+        self._handler = Handler(config)
 
         self._render_thread = threading.Thread(target=self._run_render)
         self.running = False
 
         pygame.init()
 
-        self.display = Display(self._handler, WINDOW_SIZE)
+        self.display = Display(self._handler, (config.WIDTH, config.HEIGHT))
         self._handler.display = self.display
 
-        self.db = Database(self._handler.config.DATABASE_PATH, BinaryConverter('list'))
+        if config.TESTING:
+            if os.path.exists(config.TESTING_DB_PATH):
+                os.remove(config.TESTING_DB_PATH)
+            self.db = Database(config.TESTING_DB_PATH)
+        else:
+            self.db = Database(config.DB_PATH)
         self._handler.db = self.db
         self.db.connect()
-        self.db.create_table()
 
-        self.scene = PlaygroundScene(self._handler, WINDOW_SIZE)
+        self.scene = PlaygroundScene(self._handler)
         self._handler.scene = self.scene
 
     def run(self) -> None:
@@ -69,7 +71,7 @@ class App:
 
                 # update the scene every UPDATE_RATE seconds
                 current_time = pygame.time.get_ticks()
-                if current_time - update_timer >= UPDATE_RATE * 1000:
+                if current_time - update_timer >= 1000 / self._handler.config.UPDATE_RATE:
                     # update game state
                     self.scene.update((current_time - update_timer) / 1000)
                     # reset update timer
@@ -97,7 +99,7 @@ class App:
             self.display.screen.fill((0, 0, 0))
             self.scene.render(self.display)
             pygame.display.flip()
-            clock.tick(FPS)
+            clock.tick(self._handler.config.FPS)
 
 
 if __name__ == '__main__':

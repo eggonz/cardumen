@@ -5,7 +5,7 @@ import time
 from pygame import Vector2
 
 from cardumen.control import Action, Agent
-from cardumen.database import Database, BinaryConverter
+from cardumen.database import Table
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad
 from cardumen.handler import Handler
@@ -68,6 +68,8 @@ class Fish(Entity):
 
         self._shapes = [view, collider, sensor]
 
+        self.db_table = Table(self._handler.db, f"fish{cat}")
+
     def update(self, dt: float) -> None:
         action = self._agent.act(self.get_state())
         action.execute(self, dt)
@@ -75,7 +77,7 @@ class Fish(Entity):
         self.vel.from_polar((self.speed, -self.prs.rot_deg))
         self.prs.pos += self.vel * dt
 
-        self._handler.db.add(time.time(), self.cat, self.get_state())
+        self.db_table.add(time.time(), self.get_state())
 
     def render(self, display) -> None:
         super().render(display)
