@@ -72,13 +72,13 @@ class Table:
         self._db.execute(f'INSERT INTO {self.name} (time, state) VALUES (?, ?)', (time, bin_arr))
         self._db.commit()
 
-    def _format_items(self, items: list[tuple[float, np.ndarray]]) -> list[tuple[float, bytes]]:
-        return [(time, self._bin_converter.to_bytes(state)) for time, state in items]
+    def _format_items(self, items: list[tuple[float, bytes]]) -> list[tuple[float, np.ndarray]]:
+        return [(time, self._bin_converter.from_bytes(state)) for time, state in items]
 
     def get_all(self):
         self._db.cursor.execute(f'SELECT * FROM {self.name}')
-        return self._format_items(self._db.cursor.fetchall())  # TODO test gets
+        return self._format_items(self._db.cursor.fetchall())
 
     def get_timerange(self, start_time: float, end_time: float):
         self._db.cursor.execute(f'SELECT * FROM {self.name} WHERE time BETWEEN ? AND ?', (start_time, end_time))
-        return self._format_items(self._db.cursor.fetchall())  # TODO test gets
+        return self._format_items(self._db.cursor.fetchall())
