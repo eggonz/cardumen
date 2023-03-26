@@ -6,6 +6,7 @@ import time
 
 import pygame
 
+from cardumen.config import Config
 from cardumen.display import Display
 from cardumen.scene import PlaygroundScene
 
@@ -23,13 +24,15 @@ class App:
         Start app by initializing display and scene.
         Defines update and rendering threads.
         """
+        self._config = Config()
+
         self._update_thread = threading.Thread(target=self._run_update)
         self._render_thread = threading.Thread(target=self._run_render)
         self.running = False
 
         pygame.init()
-        self.display = Display(WINDOW_SIZE)
-        self.scene = PlaygroundScene(WINDOW_SIZE)
+        self.display = Display(self._config, WINDOW_SIZE)
+        self.scene = PlaygroundScene(self._config, WINDOW_SIZE)
 
     def run(self) -> None:
         """

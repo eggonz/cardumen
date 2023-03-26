@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pygame import Vector2
 
+from cardumen.config import Config
 from cardumen.control import Action, Agent
 from cardumen.entities import Entity
-from cardumen.geometry import PosRotScale, deg2rad, rad2deg
+from cardumen.geometry import PosRotScale, deg2rad
 from cardumen.shapes import Shape
 from cardumen.sprite import Sprite
 
@@ -28,8 +29,10 @@ class Swim(Action):
 
 
 class Fish(Entity):
-    def __init__(self, prs: PosRotScale):
-        super().__init__(prs, Sprite("assets/fish1.png", rot=deg2rad(-90), scale=.05))
+    def __init__(self, config: Config, prs: PosRotScale, cat: int = 1):
+        if not 1 <= cat <= 7:
+            raise ValueError("cat must be in [1, 7]")
+        super().__init__(config, prs, Sprite(f"assets/fish{cat}.png", rot=deg2rad(-90), scale=.05))
 
         base_speed = 200
         self.min_speed = base_speed * .25
@@ -44,12 +47,12 @@ class Fish(Entity):
         # trapezoid view
         w, h = self.sprite.width, self.sprite.height
         trapezoid = Shape(self.prs, [Vector2(-1, 0), Vector2(1, 0), Vector2(6, 12), Vector2(-6, 12)],
-                          fill_color=(255, 255, 255, 100), line_color=(0, 0, 0, 255))
+                          fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
         view = trapezoid.scale_local(h / 2).rot_local(deg2rad(90)).move_local(Vector2(w / 2 + 4, 0))
 
         # body rect collider
         rect = Shape(self.prs, [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)],
-                     fill_color=(0, 255, 0, 100), line_color=(0, 255, 0, 255))
+                     fill_color=(0, 255, 0, 50), line_color=(0, 255, 0, 255))
         collider = rect.move_local(Vector2(-w / 2, -h / 2))
 
         # proximity sense hexagon collider
@@ -57,7 +60,7 @@ class Fish(Entity):
         a = l / 2 * (3 ** .5)  # apothem
         hexagon_points = [Vector2(0, -l), Vector2(a, -l / 2), Vector2(a, l / 2), Vector2(0, l),
                           Vector2(-a, l / 2), Vector2(-a, -l / 2)]
-        sensor = Shape(self.prs, hexagon_points, fill_color=(0, 0, 255, 100), line_color=(0, 0, 255, 255))
+        sensor = Shape(self.prs, hexagon_points, fill_color=(0, 0, 255, 50), line_color=(0, 0, 255, 255))
 
         self._shapes = [view, collider, sensor]
 
@@ -70,8 +73,9 @@ class Fish(Entity):
 
     def render(self, display) -> None:
         super().render(display)
-        for shape in self._shapes:
-            shape.render(display)
+        if self._config.DEBUG:
+            for shape in self._shapes:
+                shape.render(display)
 
     def get_state(self) -> list:
         return [tuple(self.prs.pos), tuple(self.vel)]

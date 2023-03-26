@@ -1,12 +1,14 @@
 import pygame
 from pygame import Vector2
 
+from cardumen.config import Config
 from cardumen.geometry import PosRotScale
 from cardumen.sprite import Sprite
 
 
 class Display:
-    def __init__(self, screen_size: tuple):
+    def __init__(self, config: Config, screen_size: tuple):
+        self._config = config
         self.screen_size = Vector2(screen_size)
         self.screen = pygame.display.set_mode(screen_size)
 
@@ -38,7 +40,7 @@ class Display:
 
     def draw_sprite(self, sprite: Sprite, prs: PosRotScale, wrap=True):
         img = sprite.get_transformed(prs.rot, prs.scale)
-        if wrap:
+        if wrap and self._config.WRAP:
             img_size = Vector2(img.get_size())
             min_x, min_y = prs.pos - img_size/2
             max_x, max_y = prs.pos + img_size/2
@@ -49,7 +51,7 @@ class Display:
     def draw_polygon(self, points: list[Vector2], fill_color: tuple = (0, 0, 0, 0), line_color: tuple = (0, 0, 0, 0),
                      wrap=True):
         surf = pygame.Surface(self.screen_size + Vector2(2, 2), pygame.SRCALPHA)
-        if wrap:
+        if wrap and self._config.WRAP:
             lx, ly = zip(*points)
             for neighbor in self._get_wrap_repeats(min(lx), min(ly), max(lx), max(ly)):
                 npoints = [p + neighbor for p in points]

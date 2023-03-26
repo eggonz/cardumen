@@ -2,19 +2,21 @@ from __future__ import annotations
 
 from pygame import Vector2
 
+from cardumen.config import Config
 from cardumen.display import Display
 from cardumen.geometry import PosRotScale
 from cardumen.sprite import Sprite
 
 
 class Entity:
-    def __init__(self, prs: PosRotScale, sprite: Sprite = None):
+    def __init__(self, config: Config, prs: PosRotScale, sprite: Sprite = None):
         """
         Create an Entity.
 
         :param prs: position, rotation, scale
         :param sprite: sprite to draw
         """
+        self._config = config
         self.prs = prs
         self.sprite = sprite
 
@@ -36,8 +38,8 @@ class Entity:
 
 
 class WaterBg(Entity):
-    def __init__(self, screen_size: Vector2):
-        super().__init__(PosRotScale(screen_size/2), Sprite("assets/water.png"))
+    def __init__(self, config: Config, screen_size: Vector2):
+        super().__init__(config, PosRotScale(screen_size/2), Sprite("assets/water.png"))
         # fit screen
         self.sprite.apply_transform(scale=max(screen_size.x / self.sprite.width, screen_size.y / self.sprite.height))
 
