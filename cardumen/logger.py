@@ -77,9 +77,9 @@ class _Logger:
 log = _Logger()
 
 
-def set_log_level(log_level: int):
+def set_log_level(log_level: LogLevel):
     log._log_level = log_level
 
 
-def set_log_file(log_file: str):
+def set_log_file(log_file: LogLevel):
     log._log_file = log_file

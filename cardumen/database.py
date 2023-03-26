@@ -23,39 +23,41 @@ class BinaryConverter:
 class Database:
     def __init__(self, path: str, buffer_size: int = 1):
         self.path = path
-        self._db = None
+        self._conn = None
         self._cursor = None
         self._buffer_size = buffer_size
         self._buffer_items = 0
 
     def connect(self):
-        self._db = sqlite3.connect(self.path)
-        self._cursor = self._db.cursor()
+        log.debug(f"Connecting to database at {self.path}")
+        self._conn = sqlite3.connect(self.path)
+        self._cursor = self._conn.cursor()
 
-    @property
     def cursor(self):
         return self._cursor
 
-    def commit(self):
+    def commit(self, force: bool = False):
         """Commit the database if the buffer is full."""
         self._buffer_items += 1
-        if self._buffer_items >= self._buffer_size:
+        if force or self._buffer_items >= self._buffer_size:
             log.debug(f"Committing {self._buffer_items} items")
-            self._db.commit()
+            self._conn.commit()
             self._buffer_items = 0
 
     def close(self):
         # commit remaining items
         log.debug(f"Committing {self._buffer_items} items")
-        self._db.commit()
+        self._conn.commit()
         self._buffer_items = 0
 
         # close connection
-        self._db.close()
-        self._db = None
+        log.debug(f"Closing database connection")
+        self._cursor.close()
+        self._conn.close()
+        self._conn = None
 
     def execute(self, query, params=()):
-        self._db.execute(query, params)
+        self._conn.execute(query, params)
 
 
 class Table:
@@ -65,7 +67,9 @@ class Table:
         self._bin_converter = BinaryConverter(dtype=np.float32)
 
     def create(self):
+        log.debug(f"Creating table {self.name}")
         self._db.execute(f'CREATE TABLE IF NOT EXISTS {self.name} (time FLOAT, state BLOB)')
+        self._db.commit(force=True)
 
     def add(self, time: float, state: np.ndarray):
         bin_arr = self._bin_converter.to_bytes(state)
@@ -76,9 +80,13 @@ class Table:
         return [(time, self._bin_converter.from_bytes(state)) for time, state in items]
 
     def get_all(self):
-        self._db.cursor.execute(f'SELECT * FROM {self.name}')
-        return self._format_items(self._db.cursor.fetchall())
+        log.debug(f"Getting all items from table {self.name}")
+        cur = self._db.cursor()
+        cur.execute(f'SELECT time, state FROM {self.name}')
+        return self._format_items(cur.fetchall())
 
     def get_timerange(self, start_time: float, end_time: float):
-        self._db.cursor.execute(f'SELECT * FROM {self.name} WHERE time BETWEEN ? AND ?', (start_time, end_time))
-        return self._format_items(self._db.cursor.fetchall())
+        log.debug(f"Getting items from table {self.name} between {start_time} and {end_time}")
+        cur = self._db.cursor()
+        cur.execute(f'SELECT time, state FROM {self.name} WHERE time BETWEEN ? AND ?', (start_time, end_time))
+        return self._format_items(cur.fetchall())

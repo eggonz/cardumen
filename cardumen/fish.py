@@ -69,7 +69,7 @@ class Fish(Entity):
 
         self._shapes = [view, collider, sensor]
 
-        self.db_table = Table(self._handler.db, 'fish1')
+        self.db_table = Table(self._handler.db, f'fish{cat}')
         self.db_table.create()
 
     def update(self, dt: float) -> None:
@@ -87,5 +87,5 @@ class Fish(Entity):
             for shape in self._shapes:
                 shape.render(display)
 
-    def get_state(self) -> object:
+    def get_state(self) -> np.ndarray:
         return np.array([*self.prs.pos, *self.vel])
