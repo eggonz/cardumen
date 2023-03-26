@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import time
+
 from pygame import Vector2
 
-from cardumen.config import Config
 from cardumen.control import Action, Agent
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad
+from cardumen.handler import Handler
 from cardumen.shapes import Shape
 from cardumen.sprite import Sprite
 
@@ -29,10 +31,11 @@ class Swim(Action):
 
 
 class Fish(Entity):
-    def __init__(self, config: Config, prs: PosRotScale, cat: int = 1):
+    def __init__(self, handler: Handler, prs: PosRotScale, cat: int = 1):
         if not 1 <= cat <= 7:
             raise ValueError("cat must be in [1, 7]")
-        super().__init__(config, prs, Sprite(f"assets/fish{cat}.png", rot=deg2rad(-90), scale=.05))
+        super().__init__(handler, prs, Sprite(f"assets/fish{cat}.png", rot=deg2rad(-90), scale=.05))
+        self.cat = cat
 
         base_speed = 200
         self.min_speed = base_speed * .25
@@ -73,9 +76,9 @@ class Fish(Entity):
 
     def render(self, display) -> None:
         super().render(display)
-        if self._config.DEBUG:
+        if self._handler.config.DEBUG:
             for shape in self._shapes:
                 shape.render(display)
 
     def get_state(self) -> list:
-        return [tuple(self.prs.pos), tuple(self.vel)]
+        return [*self.prs.pos, *self.vel]

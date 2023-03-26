@@ -6,8 +6,8 @@ import time
 
 import pygame
 
-from cardumen.config import Config
 from cardumen.display import Display
+from cardumen.handler import Handler
 from cardumen.scene import PlaygroundScene
 
 FPS = 32  # frames per sec, 64
@@ -24,15 +24,17 @@ class App:
         Start app by initializing display and scene.
         Defines update and rendering threads.
         """
-        self._config = Config()
+        self._handler = Handler()
 
         self._update_thread = threading.Thread(target=self._run_update)
         self._render_thread = threading.Thread(target=self._run_render)
         self.running = False
 
         pygame.init()
-        self.display = Display(self._config, WINDOW_SIZE)
-        self.scene = PlaygroundScene(self._config, WINDOW_SIZE)
+        self.display = Display(self._handler, WINDOW_SIZE)
+        self._handler.display = self.display
+        self.scene = PlaygroundScene(self._handler, WINDOW_SIZE)
+        self._handler.scene = self.scene
 
     def run(self) -> None:
         """

@@ -2,24 +2,24 @@ from collections import defaultdict
 
 from pygame import Vector2
 
-from cardumen.config import Config
 from cardumen.display import Display
 from cardumen.entities import WaterBg
 from cardumen.fish import Fish
 from cardumen.geometry import PosRotScale
+from cardumen.handler import Handler
 
 
 class PlaygroundScene:
 
-    def __init__(self, config: Config, screen_size: tuple):
-        self._config = config
+    def __init__(self, handler: Handler, screen_size: tuple):
+        self._handler = handler
         self._screen_size = Vector2(screen_size)
 
         self.layers = defaultdict(list)
 
-        water = WaterBg(config, self._screen_size)
-        fish1 = Fish(config, PosRotScale(self._screen_size/2))
-        fish2 = Fish(config, PosRotScale(), cat=2)
+        water = WaterBg(handler, self._screen_size)
+        fish1 = Fish(handler, PosRotScale(self._screen_size/2))
+        fish2 = Fish(handler, PosRotScale(), cat=2)
 
         self.layers[0].append(water)
         self.layers[-1].append(fish1)
