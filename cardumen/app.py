@@ -6,13 +6,14 @@ import time
 
 import pygame
 
+from cardumen.database import Database, BinaryConverter
 from cardumen.display import Display
 from cardumen.handler import Handler
 from cardumen.scene import PlaygroundScene
 
 FPS = 32  # frames per sec, 64
 SPF = 1.0 / FPS  # sec per frame
-UPDATE_RATE = 0.01  # sec
+UPDATE_RATE = 1 / 100  # sec
 WINDOW_SIZE = (1000, 600)
 
 
@@ -26,13 +27,19 @@ class App:
         """
         self._handler = Handler()
 
-        self._update_thread = threading.Thread(target=self._run_update)
         self._render_thread = threading.Thread(target=self._run_render)
         self.running = False
 
         pygame.init()
+
         self.display = Display(self._handler, WINDOW_SIZE)
         self._handler.display = self.display
+
+        self.db = Database(self._handler.config.DATABASE_PATH, BinaryConverter('list'))
+        self._handler.db = self.db
+        self.db.connect()
+        self.db.create_table()
+
         self.scene = PlaygroundScene(self._handler, WINDOW_SIZE)
         self._handler.scene = self.scene
 
@@ -44,42 +51,37 @@ class App:
         :return:
         """
         self.running = True
-        self._update_thread.start()
         self._render_thread.start()
 
         try:
             pygame.fastevent.init()
-            # loop until the user clicks the close button
+            update_timer = pygame.time.get_ticks()
             while self.running:
                 # Read events
                 queue = pygame.fastevent.get()
                 for event in queue:
                     if event.type == pygame.QUIT:
                         self.running = False
+                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                    self.running = False
+                if not self.running:
+                    break
+
+                # update the scene every UPDATE_RATE seconds
+                current_time = pygame.time.get_ticks()
+                if current_time - update_timer >= UPDATE_RATE * 1000:
+                    # update game state
+                    self.scene.update((current_time - update_timer) / 1000)
+                    # reset update timer
+                    update_timer = current_time
+
                 # Stability sleep
                 time.sleep(.01)
-        except:
-            self.running = False
         finally:
-            self._update_thread.join()
+            self.running = False
             self._render_thread.join()
+            self.db.close()
             pygame.quit()
-
-    def _run_update(self) -> None:
-        """
-        Run main update loop.
-        The scene is updated at regular intervals of time.
-
-        :return:
-        """
-        t0 = time.time()
-        while self.running:
-            # Update scene
-            self.scene.update(dt=UPDATE_RATE)
-
-            # Loop time management
-            time.sleep(max(0.0, UPDATE_RATE - time.time() + t0))
-            t0 = time.time()
 
     def _run_render(self) -> None:
         """
@@ -89,16 +91,13 @@ class App:
 
         :return:
         """
-        t0 = time.time()
+        clock = pygame.time.Clock()
         while self.running:
             # Render scene
             self.display.screen.fill((0, 0, 0))
             self.scene.render(self.display)
             pygame.display.flip()
-
-            # Loop time management
-            time.sleep(max(0.0, SPF - time.time() + t0))
-            t0 = time.time()
+            clock.tick(FPS)
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@ import time
 from pygame import Vector2
 
 from cardumen.control import Action, Agent
+from cardumen.database import Database, BinaryConverter
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad
 from cardumen.handler import Handler
@@ -73,6 +74,8 @@ class Fish(Entity):
         self.speed = max(self.min_speed, min(self.max_speed, self.speed))
         self.vel.from_polar((self.speed, -self.prs.rot_deg))
         self.prs.pos += self.vel * dt
+
+        self._handler.db.add(time.time(), self.cat, self.get_state())
 
     def render(self, display) -> None:
         super().render(display)
