@@ -1,14 +1,21 @@
-from cardumen.config import DbConfig
+import os
+
 from cardumen.database import Database, Table
 
 import pytest
+import numpy as np
+import time
 
 
 @pytest.fixture
 def db():
-    db_config = DbConfig('../db_config.json')
-    db = Database("../test.db", db_config)
+    if os.path.exists('../test.db'):
+        os.remove('../test.db')
+    db = Database("../test.db", 1)
     db.connect()
+    table = Table(db, "fish1")
+    table.create()
+    table.add(time.time(), np.array([[1, 2, 3], [4, 5, 6]]).astype(np.float32))
     yield db
     db.close()
 

@@ -9,7 +9,7 @@
   "windowBorderless": false,
   "windowWrap": true,
   "dbPath": "cardumen_dev.db",
-  "dbConfigPath": "db_config_dev.json",
+  "dbBufferSize": 200,
   "debug": true,
   "testing": true
 }

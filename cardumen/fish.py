@@ -69,7 +69,8 @@ class Fish(Entity):
 
         self._shapes = [view, collider, sensor]
 
-        self.db_table = Table(self._handler.db, 'fish1', 'arr4')  # arrays perform best
+        self.db_table = Table(self._handler.db, 'fish1')
+        self.db_table.create()
 
     def update(self, dt: float) -> None:
         action = self._agent.act(self.get_state())

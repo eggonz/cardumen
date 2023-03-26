@@ -7,10 +7,11 @@ import time
 
 import pygame
 
-from cardumen.config import DbConfig, Config
+from cardumen.config import Config
 from cardumen.database import Database
 from cardumen.display import Display
 from cardumen.handler import Handler
+from cardumen.logger import log, LogLevel
 from cardumen.scene import PlaygroundScene
 
 
@@ -22,6 +23,9 @@ class App:
         Start app by initializing display and scene.
         Defines update and rendering threads.
         """
+        log.set_log_level(LogLevel.DEBUG)
+        # log.set_log_file('cardumen.log')
+
         config = Config(config_path)
         self._handler = Handler(config)
 
@@ -33,10 +37,9 @@ class App:
         self.display = Display(self._handler, (config.WIDTH, config.HEIGHT))
         self._handler.display = self.display
 
-        db_config = DbConfig(config.DB_CONFIG_PATH)
         if config.TESTING and os.path.exists(config.DB_PATH):
             os.remove(config.DB_PATH)
-        self.db = Database(config.DB_PATH, db_config)
+        self.db = Database(config.DB_PATH, config.DB_BUFFER_SIZE)
         self._handler.db = self.db
         self.db.connect()
 

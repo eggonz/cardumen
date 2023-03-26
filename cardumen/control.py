@@ -5,6 +5,8 @@ Fish have two possible actions tilt right and tilt left.
 import random
 from enum import Enum
 
+import numpy as np
+
 
 class Action(Enum):
     def execute(self, *args, **kwargs):
@@ -15,7 +17,7 @@ class Agent:
     def __init__(self, actions: list[Action]):
         self.actions = actions
 
-    def act(self, state: object) -> Action:
+    def act(self, state: np.ndarray) -> Action:
         """
         Get action from agent.
         :param state: current state
