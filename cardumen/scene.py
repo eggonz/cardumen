@@ -15,7 +15,7 @@ class PlaygroundScene:
         self.layers = defaultdict(list)
 
         water = WaterBg(handler, handler.display.screen_size)
-        fish1 = Fish(handler, PosRotScale(handler.display.screen_size/2))
+        fish1 = Fish(handler, PosRotScale(handler.display.screen_size / 2))
         fish2 = Fish(handler, PosRotScale(), cat=2)
 
         self.layers[0].append(water)

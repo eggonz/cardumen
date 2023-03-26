@@ -27,6 +27,7 @@ class PosRotScale:
     """
     Class to represent position, rotation and scale of an object.
     """
+
     def __init__(self, pos: Vector2 = Vector2(0, 0), rot: float = 0, scale: float = 1):
         """
         Create a new PosRotScale object.
@@ -50,4 +51,3 @@ class PosRotScale:
 
     def __repr__(self):
         return f'PosRotScale(pos={self.pos},rot={self.rot},scale={self.scale})'
-

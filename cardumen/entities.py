@@ -39,11 +39,9 @@ class Entity:
 
 class WaterBg(Entity):
     def __init__(self, handler: Handler, screen_size: Vector2):
-        super().__init__(handler, PosRotScale(screen_size/2), Sprite("assets/water.png"))
+        super().__init__(handler, PosRotScale(screen_size / 2), Sprite("assets/water.png"))
         # fit screen
         self.sprite.apply_transform(scale=max(screen_size.x / self.sprite.width, screen_size.y / self.sprite.height))
 
     def render(self, display: Display) -> None:
         display.draw_sprite(self.sprite, self.prs, wrap=False)
-
-

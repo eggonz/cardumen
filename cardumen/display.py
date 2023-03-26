@@ -42,8 +42,8 @@ class Display:
         img = sprite.get_transformed(prs.rot, prs.scale)
         if wrap and self._handler.config.WINDOW_WRAP:
             img_size = Vector2(img.get_size())
-            min_x, min_y = prs.pos - img_size/2
-            max_x, max_y = prs.pos + img_size/2
+            min_x, min_y = prs.pos - img_size / 2
+            max_x, max_y = prs.pos + img_size / 2
             for neighbor in self._get_wrap_repeats(min_x, min_y, max_x, max_y):
                 self.screen.blit(img, img.get_rect(center=prs.pos + neighbor))
         self.screen.blit(img, img.get_rect(center=prs.pos))
