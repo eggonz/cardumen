@@ -7,7 +7,7 @@ import time
 
 import pygame
 
-from cardumen.config import AppConfig
+from cardumen.config import DbConfig, Config
 from cardumen.database import Database
 from cardumen.display import Display
 from cardumen.handler import Handler
@@ -17,12 +17,12 @@ from cardumen.scene import PlaygroundScene
 class App:
     """Class for the main application to be run"""
 
-    def __init__(self):
+    def __init__(self, config_path: str = 'config_dev.json'):
         """
         Start app by initializing display and scene.
         Defines update and rendering threads.
         """
-        config = AppConfig('config.json')
+        config = Config(config_path)
         self._handler = Handler(config)
 
         self._render_thread = threading.Thread(target=self._run_render)
@@ -33,12 +33,10 @@ class App:
         self.display = Display(self._handler, (config.WIDTH, config.HEIGHT))
         self._handler.display = self.display
 
-        if config.TESTING:
-            if os.path.exists(config.TESTING_DB_PATH):
-                os.remove(config.TESTING_DB_PATH)
-            self.db = Database(config.TESTING_DB_PATH)
-        else:
-            self.db = Database(config.DB_PATH)
+        db_config = DbConfig(config.DB_CONFIG_PATH)
+        if config.TESTING and os.path.exists(config.DB_PATH):
+            os.remove(config.DB_PATH)
+        self.db = Database(config.DB_PATH, db_config)
         self._handler.db = self.db
         self.db.connect()
 

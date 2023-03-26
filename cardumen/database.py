@@ -105,11 +105,11 @@ class BinaryConverter:
 
 
 class Database:
-    def __init__(self, path: str):
+    def __init__(self, path: str, db_config: DbConfig):
         self.path = path
         self._db = None
         self._cursor = None
-        self.config = DbConfig("db_config.json")
+        self.config = db_config
 
         self._buffer_items = 0
 

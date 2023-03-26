@@ -1,31 +1,11 @@
 {
   "params": {
-    "buffer_size": 500
+    "bufferSize": 500
   },
-  "tables": {
-    "fish1": {
-      "obj_type": "list",
+  "dataFormats": {
+    "fish": {
+      "objType": "list",
       "shape": [4],
-      "dtype": "float"
-    },
-    "fish2": {
-      "obj_type": "list",
-      "shape": [4],
-      "dtype": "float"
-    },
-    "fish3": {
-      "obj_type": "array",
-      "shape": [4],
-      "dtype": "float"
-    },
-    "fish4": {
-      "obj_type": "matrix",
-      "shape": [2, 2],
-      "dtype": "float"
-    },
-    "fish5": {
-      "obj_type": "array",
-      "shape": [2, 2],
       "dtype": "float"
     }
   }

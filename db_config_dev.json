@@ -1,0 +1,32 @@
+{
+  "params": {
+    "bufferSize": 500
+  },
+  "dataFormats": {
+    "fish1": {
+      "objType": "list",
+      "shape": [4],
+      "dtype": "float"
+    },
+    "fish2": {
+      "objType": "list",
+      "shape": [4],
+      "dtype": "float"
+    },
+    "fish3": {
+      "objType": "array",
+      "shape": [4],
+      "dtype": "float"
+    },
+    "fish4": {
+      "objType": "matrix",
+      "shape": [2, 2],
+      "dtype": "float"
+    },
+    "fish5": {
+      "objType": "array",
+      "shape": [2, 2],
+      "dtype": "float"
+    }
+  }
+}

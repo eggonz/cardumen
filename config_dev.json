@@ -1,15 +1,15 @@
 {
   "width": 1000,
   "height": 600,
-  "title": "cardumen",
+  "title": "cardumen dev",
   "fps": 30,
   "updateRate": 100,
   "windowResizable": false,
   "windowFullscreen": false,
   "windowBorderless": false,
   "windowWrap": true,
-  "dbPath": "cardumen.db",
-  "dbConfigPath": "db_config.json",
-  "debug": false,
-  "testing": false
+  "dbPath": "cardumen_dev.db",
+  "dbConfigPath": "db_config_dev.json",
+  "debug": true,
+  "testing": true
 }
