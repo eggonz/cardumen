@@ -73,11 +73,13 @@ class _Logger:
         if self._log_level <= LogLevel.CRITICAL:
             self._log(message)
 
-    def set_log_level(self, level: int):
-        self._log_level = level
-
-    def set_log_file(self, log_file: str):
-        self._log_file = log_file
-
 
 log = _Logger()
+
+
+def set_log_level(log_level: int):
+    log._log_level = log_level
+
+
+def set_log_file(log_file: str):
+    log._log_file = log_file

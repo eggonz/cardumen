@@ -11,7 +11,7 @@ from cardumen.config import Config
 from cardumen.database import Database
 from cardumen.display import Display
 from cardumen.handler import Handler
-from cardumen.logger import log, LogLevel
+from cardumen.logger import log, set_log_level, set_log_file
 from cardumen.scene import PlaygroundScene
 
 
@@ -23,10 +23,12 @@ class App:
         Start app by initializing display and scene.
         Defines update and rendering threads.
         """
-        log.set_log_level(LogLevel.DEBUG)
-        # log.set_log_file('cardumen.log')
-
         config = Config(config_path)
+
+        set_log_level(config.LOG_LEVEL)
+        set_log_file(config.LOG_FILE)
+        log.info("Starting app")
+
         self._handler = Handler(config)
 
         self._render_thread = threading.Thread(target=self._run_render)
@@ -53,6 +55,7 @@ class App:
 
         :return:
         """
+        log.info("Running app")
         self.running = True
         self._render_thread.start()
 
@@ -85,6 +88,7 @@ class App:
             self._render_thread.join()
             self.db.close()
             pygame.quit()
+            log.info("App closed")
 
     def _run_render(self) -> None:
         """

@@ -11,6 +11,7 @@ class Display:
         self._handler = handler
         self.screen_size = Vector2(screen_size)
         self.screen = pygame.display.set_mode(screen_size)
+        pygame.display.set_caption(handler.config.TITLE)
 
     def _get_wrap_repeats(self, min_x, min_y, max_x, max_y):
         width, height = self.screen_size

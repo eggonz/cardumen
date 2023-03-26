@@ -10,6 +10,8 @@
   "windowWrap": true,
   "dbPath": "cardumen.db",
   "dbBufferSize": 200,
+  "logLevel": "info",
+  "logFile": "cardumen.log",
   "debug": false,
   "testing": false
 }

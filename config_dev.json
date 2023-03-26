@@ -9,7 +9,9 @@
   "windowBorderless": false,
   "windowWrap": true,
   "dbPath": "cardumen_dev.db",
-  "dbBufferSize": 200,
+  "dbBufferSize": 500,
+  "logLevel": "debug",
+  "logFile": "dev.log",
   "debug": true,
   "testing": true
 }
