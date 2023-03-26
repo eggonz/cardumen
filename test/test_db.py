@@ -8,21 +8,32 @@ import time
 
 
 @pytest.fixture
-def db():
-    if os.path.exists('../test.db'):
-        os.remove('../test.db')
-    db = Database("../test.db", 1)
+def db_path():
+    return "../test.db"
+
+
+@pytest.fixture
+def table_name():
+    return 'test_data'
+
+
+@pytest.fixture
+def db(db_path, table_name):
+    if os.path.exists(db_path):
+        os.remove(db_path)
+    db = Database(db_path, 1)
     db.connect()
-    table = Table(db, "fish1")
+    table = Table(db, table_name)
     table.create()
     table.add(time.time(), np.array([[1, 2, 3], [4, 5, 6]]).astype(np.float32))
     yield db
     db.close()
+    os.remove(db_path)
 
 
 @pytest.fixture
-def table(db):
-    table = Table(db, "fish1")
+def table(db, table_name):
+    table = Table(db, table_name)
     yield table
 
 
