@@ -5,6 +5,7 @@ import time
 import numpy as np
 from pygame import Vector2
 
+from cardumen.collision import Collider
 from cardumen.control import Action, Agent
 from cardumen.database import Table
 from cardumen.entities import Entity
@@ -54,11 +55,13 @@ class Fish(Entity):
         trapezoid = Polygon(self.prs, [Vector2(-1, 0), Vector2(1, 0), Vector2(6, 12), Vector2(-6, 12)],
                             fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
         view = trapezoid.scale_local(h / 2).rot_local(deg2rad(90)).move_local(Vector2(w / 2 + 4, 0))
+        view = Collider(self, view, 'fish view', detect='fish body')
 
         # body rect collider
         rect = Polygon(self.prs, [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)],
                        fill_color=(0, 255, 0, 50), line_color=(0, 255, 0, 255))
         body = rect.move_local(Vector2(-w / 2, -h / 2))
+        body = Collider(self, body, 'fish body')
 
         # proximity sense hexagon collider
         l = 100  # side length
@@ -66,13 +69,22 @@ class Fish(Entity):
         hexagon_points = [Vector2(0, -l), Vector2(a, -l / 2), Vector2(a, l / 2), Vector2(0, l),
                           Vector2(-a, l / 2), Vector2(-a, -l / 2)]
         sensor = Polygon(self.prs, hexagon_points, fill_color=(0, 0, 255, 50), line_color=(0, 0, 255, 255))
+        sensor = Collider(self, sensor, 'fish sensor', detect='fish body')
 
-        self._shapes = [view, body, sensor]
+        self.add_colliders(view, body, sensor)
 
+        # collision callbacks
+        view.on_collision_start = lambda: view.poly.set_color(fill=(0, 255, 0, 50))
+        view.on_collision_end = lambda: view.poly.reset_color()
+        sensor.on_collision_start = lambda: sensor.poly.set_color(fill=(255, 0, 0, 50))
+        sensor.on_collision_end = lambda: sensor.poly.reset_color()
+
+        # database
         self.db_table = Table(self._handler.db, f'fish{cat}')
         self.db_table.create()
 
     def update(self, dt: float) -> None:
+        super().update(dt)
         action = self._agent.act(self.get_state())
         action.execute(self, dt)
         self.speed = max(self.min_speed, min(self.max_speed, self.speed))
@@ -80,12 +92,6 @@ class Fish(Entity):
         self.prs.pos += self.vel * dt
 
         self.db_table.add(time.time(), self.get_state())
-
-    def render(self, display) -> None:
-        super().render(display)
-        if self._handler.config.DEBUG:
-            for shape in self._shapes:
-                shape.render(display)
 
     def get_state(self) -> np.ndarray:
         return np.array([*self.prs.pos, *self.vel])

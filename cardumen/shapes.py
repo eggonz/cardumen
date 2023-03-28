@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
-
 from pygame import Vector2
 
 from cardumen.display import Display
@@ -27,6 +25,8 @@ class Polygon:
         self._points = points  # local coordinates
         self.fill_color = fill_color
         self.line_color = line_color
+        self._initial_fill_color = fill_color
+        self._initial_line_color = line_color
 
     def move_local(self, move: Vector2 = Vector2()) -> Polygon:
         """
@@ -58,6 +58,15 @@ class Polygon:
         self._points = [scale * p for p in self._points]
         return self
 
+    def update(self, dt: float) -> None:
+        """
+        Update polygon.
+
+        :param dt: time since last update
+        :return:
+        """
+        pass
+
     def render(self, display: Display) -> None:
         """
         Render polygon.
@@ -85,34 +94,15 @@ class Polygon:
         """
         return Intersection.intersect(self, other)
 
+    def set_color(self, fill: tuple = None, line: tuple = None) -> None:
+        if fill:
+            self.fill_color = fill
+        if line:
+            self.line_color = line
 
-class TaggedPoly:
-    _INDEX: dict[str, list[Polygon]] = defaultdict(list)
-
-    def __init__(self, poly: Polygon, tags: list[str]):
-        """
-        Create tagged polygon.
-
-        :param poly: polygon
-        :param tags: list of tags
-        """
-        self.poly = poly
-        self.tags = tags
-        for tag in tags:
-            TaggedPoly._INDEX[tag].append(poly)
-
-    @staticmethod
-    def get(tag: str) -> list[Polygon]:
-        """
-        Get polygons with tag.
-
-        :param tag: tag
-        :return: set of polygons
-        """
-        return TaggedPoly._INDEX[tag]
-
-    def __repr__(self):
-        return f"TaggedPoly({self.poly}, {self.tags})"
+    def reset_color(self) -> None:
+        self.fill_color = self._initial_fill_color
+        self.line_color = self._initial_line_color
 
 
 class Intersection:

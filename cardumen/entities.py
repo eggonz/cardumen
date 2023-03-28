@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pygame import Vector2
 
+from cardumen.collision import Collider
 from cardumen.display import Display
 from cardumen.geometry import PosRotScale
 from cardumen.handler import Handler
@@ -19,6 +20,7 @@ class Entity:
         self._handler = handler
         self.prs = prs
         self.sprite = sprite
+        self.colliders = []
 
     def update(self, dt: float) -> None:
         """
@@ -26,7 +28,8 @@ class Entity:
         :param dt: time since last update
         :return:
         """
-        pass
+        for collider in self.colliders:
+            collider.update(dt)
 
     def render(self, display: Display) -> None:
         """
@@ -35,6 +38,12 @@ class Entity:
         :return:
         """
         display.draw_sprite(self.sprite, self.prs)
+        if self._handler.config.DEBUG:
+            for collider in self.colliders:
+                collider.render(display)
+
+    def add_colliders(self, *colliders: Collider) -> None:
+        self.colliders.extend(colliders)
 
 
 class WaterBg(Entity):

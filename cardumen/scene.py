@@ -1,4 +1,7 @@
 from collections import defaultdict
+from random import random
+
+from pygame import Vector2
 
 from cardumen.display import Display
 from cardumen.entities import WaterBg
@@ -15,12 +18,12 @@ class PlaygroundScene:
         self.layers = defaultdict(list)
 
         water = WaterBg(handler, handler.display.screen_size)
-        fish1 = Fish(handler, PosRotScale(handler.display.screen_size / 2))
-        fish2 = Fish(handler, PosRotScale(), cat=2)
-
         self.layers[0].append(water)
-        self.layers[-1].append(fish1)
-        self.layers[-2].append(fish2)
+        n = 5
+        for i in range(0, n):
+            w, h = handler.display.screen_size
+            fish = Fish(handler, PosRotScale(Vector2(w * random(), h * random())), cat=i % 7 + 1)
+            self.layers[-1].append(fish)
 
     def update(self, dt: float) -> None:
         """
