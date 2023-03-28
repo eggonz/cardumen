@@ -10,7 +10,7 @@ from cardumen.database import Table
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad
 from cardumen.handler import Handler
-from cardumen.shapes import Shape
+from cardumen.shapes import Polygon
 from cardumen.sprite import Sprite
 
 
@@ -51,23 +51,23 @@ class Fish(Entity):
 
         # trapezoid view
         w, h = self.sprite.width, self.sprite.height
-        trapezoid = Shape(self.prs, [Vector2(-1, 0), Vector2(1, 0), Vector2(6, 12), Vector2(-6, 12)],
-                          fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
+        trapezoid = Polygon(self.prs, [Vector2(-1, 0), Vector2(1, 0), Vector2(6, 12), Vector2(-6, 12)],
+                            fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
         view = trapezoid.scale_local(h / 2).rot_local(deg2rad(90)).move_local(Vector2(w / 2 + 4, 0))
 
         # body rect collider
-        rect = Shape(self.prs, [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)],
-                     fill_color=(0, 255, 0, 50), line_color=(0, 255, 0, 255))
-        collider = rect.move_local(Vector2(-w / 2, -h / 2))
+        rect = Polygon(self.prs, [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)],
+                       fill_color=(0, 255, 0, 50), line_color=(0, 255, 0, 255))
+        body = rect.move_local(Vector2(-w / 2, -h / 2))
 
         # proximity sense hexagon collider
         l = 100  # side length
         a = l / 2 * (3 ** .5)  # apothem
         hexagon_points = [Vector2(0, -l), Vector2(a, -l / 2), Vector2(a, l / 2), Vector2(0, l),
                           Vector2(-a, l / 2), Vector2(-a, -l / 2)]
-        sensor = Shape(self.prs, hexagon_points, fill_color=(0, 0, 255, 50), line_color=(0, 0, 255, 255))
+        sensor = Polygon(self.prs, hexagon_points, fill_color=(0, 0, 255, 50), line_color=(0, 0, 255, 255))
 
-        self._shapes = [view, collider, sensor]
+        self._shapes = [view, body, sensor]
 
         self.db_table = Table(self._handler.db, f'fish{cat}')
         self.db_table.create()
