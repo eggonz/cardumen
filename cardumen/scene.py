@@ -19,8 +19,7 @@ class PlaygroundScene:
 
         water = WaterBg(handler, handler.config.WINDOW_SIZE)
         self.layers[0].append(water)
-        n = 5
-        for i in range(0, n):
+        for i in range(0, self._handler.config.n_fish):
             w, h = handler.config.WINDOW_SIZE
             fish = Fish(handler, PosRotScale(Vector2(w * random(), h * random())), cat=i % 7 + 1)
             self.layers[-1].append(fish)

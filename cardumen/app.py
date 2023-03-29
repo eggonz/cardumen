@@ -35,10 +35,9 @@ class App:
 
         self.running = False
         if config.RENDER:
+            log.info("Rendering enabled")
             self._render_thread = threading.Thread(target=self._run_render)
-
             self.display = Display(self._handler, config.WINDOW_SIZE)
-            self._handler.display = self.display
         else:
             log.info("Rendering disabled")
 

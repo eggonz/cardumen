@@ -7,7 +7,7 @@
   "windowResizable": false,
   "windowFullscreen": false,
   "windowBorderless": false,
-  "windowWrap": true,
+  "wrap": true,
   "dbPath": "cardumen.db",
   "dbBufferSize": 200,
   "logLevel": "info",

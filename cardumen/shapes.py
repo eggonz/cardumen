@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
+
 import pygame
 from pygame import Vector2
 
+from cardumen import utils
 from cardumen.display import Display
 from cardumen.geometry import PosRotScale, rad2deg
 
@@ -59,15 +62,6 @@ class Polygon:
         self._points = [scale * p for p in self._points]
         return self
 
-    def update(self, dt: float) -> None:
-        """
-        Update polygon.
-
-        :param dt: time since last update
-        :return:
-        """
-        pass
-
     def render(self, display: Display) -> None:
         """
         Render polygon.
@@ -86,14 +80,29 @@ class Polygon:
         """
         return [(self.prs.scale * p.rotate(-self.prs.rot_deg) + self.prs.pos) for p in self._points]
 
-    def intersects(self, other: Polygon) -> bool:
+    def clone_at(self, pos: Vector2) -> Polygon:
+        """
+        Clone polygon at a new position.
+
+        :param pos: new position
+        :return: new polygon
+        """
+        return Polygon(PosRotScale(pos, self.prs.rot, self.prs.scale), self._points, self.fill_color, self.line_color)
+
+    def intersects(self, other: Polygon, check_wrap: bool = True) -> bool:
         """
         Check if two polygons intersect.
 
         :param other: other polygon
+        :param check_wrap: check if also copies of the polygons wrapped around the screen
         :return: True if polygons intersect, False otherwise
         """
-        return Intersection.intersect(self, other)
+        lx, ly = zip(*self.points)
+        rect = pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
+        for wrap in utils.get_wraps(rect, check_wrap):
+            if Intersection.intersect(self.clone_at(self.prs.pos + wrap), other):
+                return True
+        return False
 
     def set_color(self, fill: tuple = None, line: tuple = None) -> None:
         if fill:

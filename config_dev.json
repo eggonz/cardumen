@@ -7,12 +7,13 @@
   "windowResizable": false,
   "windowFullscreen": false,
   "windowBorderless": false,
-  "windowWrap": true,
+  "wrap": true,
   "dbPath": "cardumen_dev.db",
   "dbBufferSize": 2000,
   "logLevel": "debug",
   "logFile": "dev.log",
   "debug": true,
   "testing": true,
-  "render": false
+  "render": true,
+  "paramNFish": 2
 }

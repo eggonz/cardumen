@@ -17,7 +17,7 @@ class Config:
         self.WINDOW_RESIZABLE = config['windowResizable']  # unused
         self.WINDOW_FULLSCREEN = config['windowFullscreen']  # unused
         self.WINDOW_BORDERLESS = config['windowBorderless']  # unused
-        self.WINDOW_WRAP = config['windowWrap']
+        self.WRAP = config['wrap']
         self.DB_PATH = config['dbPath']
         self.DB_BUFFER_SIZE = config['dbBufferSize']
         self.LOG_LEVEL = LogLevel[config['logLevel'].upper()]
@@ -25,3 +25,4 @@ class Config:
         self.DEBUG = config['debug']
         self.TESTING = config['testing']
         self.RENDER = config['render']
+        self.n_fish = config.get('paramNFish', 2)

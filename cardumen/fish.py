@@ -3,6 +3,9 @@ from __future__ import annotations
 import time
 
 import numpy as np
+import pygame
+import matplotlib.pyplot as plt
+import seaborn as sns
 from pygame import Vector2
 
 from cardumen.collision import Collider
@@ -11,6 +14,7 @@ from cardumen.database import Table
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad
 from cardumen.handler import Handler
+from cardumen.logger import log
 from cardumen.shapes import Polygon
 from cardumen.sprite import Sprite
 
@@ -74,10 +78,10 @@ class Fish(Entity):
         self.add_colliders(view, body, sensor)
 
         # collision callbacks
-        view.on_collision_start = lambda: view.poly.set_color(fill=(0, 255, 0, 50))
-        view.on_collision_end = lambda: view.poly.reset_color()
-        sensor.on_collision_start = lambda: sensor.poly.set_color(fill=(255, 0, 0, 50))
-        sensor.on_collision_end = lambda: sensor.poly.reset_color()
+        view.on_collision_start = lambda _: view.poly.set_color(fill=(0, 255, 0, 50))
+        view.on_collision_end = lambda _: view.poly.reset_color() if not view.is_colliding() else None
+        sensor.on_collision_start = lambda _: sensor.poly.set_color(fill=(255, 0, 0, 50))
+        sensor.on_collision_end = lambda _: sensor.poly.reset_color() if not sensor.is_colliding() else None
 
         # database
         self.db_table = Table(self._handler.db, f'fish{cat}')
