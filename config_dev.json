@@ -1,6 +1,6 @@
 {
-  "width": 1000,
-  "height": 600,
+  "width": 500,
+  "height": 500,
   "title": "cardumen dev",
   "fps": 30,
   "updateRate": 25,
@@ -15,5 +15,5 @@
   "debug": true,
   "testing": true,
   "render": true,
-  "paramNFish": 2
+  "paramNFish": 3
 }
