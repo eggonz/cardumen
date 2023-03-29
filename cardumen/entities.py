@@ -24,8 +24,8 @@ class Entity:
 
     def update(self, dt: float) -> None:
         """
-        Update scene.
-        :param dt: time since last update
+        Update entity.
+        :param dt:
         :return:
         """
         for collider in self.colliders:
@@ -33,7 +33,7 @@ class Entity:
 
     def render(self, display: Display) -> None:
         """
-        Render scene.
+        Render entity.
         :param display: display to render to
         :return:
         """
