@@ -114,6 +114,22 @@ class Polygon:
         self.fill_color = self._initial_fill_color
         self.line_color = self._initial_line_color
 
+    def get_surface(self) -> tuple[pygame.Surface, pygame.Rect]:
+        """
+        Get pygame surface of the polygon.
+
+        :return: pygame surface, rect of the polygon
+        """
+        lx, ly = zip(*self.points)
+        min_x, max_x = min(lx), max(lx)
+        min_y, max_y = min(ly), max(ly)
+        rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+        surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+        surface.set_alpha(0)
+        offset_points = [(p[0] - min_x, p[1] - min_y) for p in self.points]
+        pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
+        return surface, rect
+
 
 class Intersection:
 
