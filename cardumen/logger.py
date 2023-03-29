@@ -42,11 +42,11 @@ class _Logger:
         self._log_level = LogLevel.INFO
         self._log_file = None
 
-    def _log(self, message: str):
+    def _log(self, level: LogLevel, message: str):
         """
         Log message to file.
         """
-        message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')} [{self._log_level.name}] {message}"
+        message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')} [{level.name}] {message}"
 
         print(message, end='\n', file=sys.stdout)
         if self._log_file is not None:
@@ -55,23 +55,23 @@ class _Logger:
 
     def debug(self, message: str):
         if self._log_level <= LogLevel.DEBUG:
-            self._log(message)
+            self._log(LogLevel.DEBUG, message)
 
     def info(self, message: str):
         if self._log_level <= LogLevel.INFO:
-            self._log(message)
+            self._log(LogLevel.INFO, message)
 
     def warning(self, message: str):
         if self._log_level <= LogLevel.WARNING:
-            self._log(message)
+            self._log(LogLevel.WARNING, message)
 
     def error(self, message: str):
         if self._log_level <= LogLevel.ERROR:
-            self._log(message)
+            self._log(LogLevel.ERROR, message)
 
     def critical(self, message: str):
         if self._log_level <= LogLevel.CRITICAL:
-            self._log(message)
+            self._log(LogLevel.CRITICAL, message)
 
 
 log = _Logger()

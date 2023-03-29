@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pygame
 from pygame import Vector2
 
 from cardumen.display import Display

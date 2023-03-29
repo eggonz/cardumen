@@ -13,5 +13,6 @@
   "logLevel": "info",
   "logFile": "cardumen.log",
   "debug": false,
-  "testing": false
+  "testing": false,
+  "render": true
 }

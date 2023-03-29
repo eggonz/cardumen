@@ -17,11 +17,11 @@ class PlaygroundScene:
 
         self.layers = defaultdict(list)
 
-        water = WaterBg(handler, handler.display.screen_size)
+        water = WaterBg(handler, handler.config.WINDOW_SIZE)
         self.layers[0].append(water)
         n = 5
         for i in range(0, n):
-            w, h = handler.display.screen_size
+            w, h = handler.config.WINDOW_SIZE
             fish = Fish(handler, PosRotScale(Vector2(w * random(), h * random())), cat=i % 7 + 1)
             self.layers[-1].append(fish)
 
@@ -36,14 +36,14 @@ class PlaygroundScene:
                 entity.update(dt)
 
                 # wrap every entity position
-                if entity.prs.pos.x > self._handler.display.screen_size.x:
-                    entity.prs.pos.x -= self._handler.display.screen_size.x
+                if entity.prs.pos.x > self._handler.config.WINDOW_SIZE.x:
+                    entity.prs.pos.x -= self._handler.config.WINDOW_SIZE.x
                 elif entity.prs.pos.x < 0:
-                    entity.prs.pos.x += self._handler.display.screen_size.x
-                if entity.prs.pos.y > self._handler.display.screen_size.y:
-                    entity.prs.pos.y -= self._handler.display.screen_size.y
+                    entity.prs.pos.x += self._handler.config.WINDOW_SIZE.x
+                if entity.prs.pos.y > self._handler.config.WINDOW_SIZE.y:
+                    entity.prs.pos.y -= self._handler.config.WINDOW_SIZE.y
                 elif entity.prs.pos.y < 0:
-                    entity.prs.pos.y += self._handler.display.screen_size.y
+                    entity.prs.pos.y += self._handler.config.WINDOW_SIZE.y
 
     def render(self, display: Display) -> None:
         """

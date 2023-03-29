@@ -1,5 +1,7 @@
 import json
 
+from pygame import Vector2
+
 from cardumen.logger import LogLevel
 
 
@@ -8,8 +10,7 @@ class Config:
         with open(path, 'r') as f:
             config = json.load(f)
 
-        self.WIDTH = config['width']
-        self.HEIGHT = config['height']
+        self.WINDOW_SIZE = Vector2(config['width'], config['height'])
         self.TITLE = config['title']
         self.FPS = config['fps']
         self.UPDATE_RATE = config['updateRate']
@@ -23,3 +24,4 @@ class Config:
         self.LOG_FILE = config['logFile']
         self.DEBUG = config['debug']
         self.TESTING = config['testing']
+        self.RENDER = config['render']
