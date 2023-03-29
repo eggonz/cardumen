@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from cardumen import utils
 from cardumen.display import Display
 from cardumen.shapes import Polygon
 
@@ -87,7 +86,7 @@ class Collider:
         :param other: other collider
         :return: True if colliding, False otherwise
         """
-        return self._colliding.get(other, False)
+        return self._colliding[other]
 
     def is_colliding(self) -> bool:
         """
@@ -95,7 +94,7 @@ class Collider:
 
         :return: True if colliding, False otherwise
         """
-        return len(self._colliding) > 0
+        return any(self._colliding.values())
 
     def on_collision(self, other: Collider) -> None:
         """
@@ -123,3 +122,6 @@ class Collider:
         :return:
         """
         pass
+
+    def __repr__(self):
+        return f'Collider({self.parent}, {self.poly}, {self.tag}, {self._detect}, {self._ignore_self})'
