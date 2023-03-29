@@ -65,6 +65,7 @@ class App:
         try:
             pygame.fastevent.init()
             update_timer = pygame.time.get_ticks()
+            last_update = pygame.time.get_ticks()
             control_ups = []
             control_nu = 0
             while self.running:
@@ -81,13 +82,12 @@ class App:
                     break
 
                 # update the scene every UPDATE_RATE seconds
-                current_time = pygame.time.get_ticks()
-                dt = (current_time - update_timer) / 1000
-                if dt >= 1 / self._handler.config.UPDATE_RATE:
+                if pygame.time.get_ticks() - update_timer >= 1000 / self._handler.config.UPDATE_RATE:
+                    update_timer += 1000 / self._handler.config.UPDATE_RATE
                     # update game state
+                    dt = (pygame.time.get_ticks() - last_update) / 1000
                     self.scene.update(dt)
-                    # reset update timer
-                    update_timer = current_time
+                    last_update = pygame.time.get_ticks()
 
                     # control check
                     control_ups.append(dt)
@@ -98,8 +98,7 @@ class App:
                     control_ups = []
                     control_nu = 0
 
-                # Stability sleep
-                time.sleep(.01)
+                time.sleep(last_update / 1000 + 1 / self._handler.config.UPDATE_RATE - pygame.time.get_ticks() / 1000)
         except KeyboardInterrupt:
             log.info("App interrupted")
         finally:
