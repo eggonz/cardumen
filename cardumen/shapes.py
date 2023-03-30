@@ -125,7 +125,6 @@ class Polygon:
         min_y, max_y = min(ly), max(ly)
         rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
         surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-        surface.set_alpha(0)
         offset_points = [(p[0] - min_x, p[1] - min_y) for p in self.points]
         pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
         return surface, rect

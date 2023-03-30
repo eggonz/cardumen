@@ -77,10 +77,7 @@ class Fish(Entity):
         self.add_colliders(self.view, self.body, self.sensor)
 
         # collision callbacks
-        # self.view.on_collision_start = lambda _: self.view.poly.set_color(fill=(0, 255, 0, 50))
-        def lam(other):
-            self.view.poly.set_color(fill=(0, 255, 0, 50))
-        self.view.on_collision_start = lam
+        self.view.on_collision_start = lambda _: self.view.poly.set_color(fill=(255, 0, 0, 50))
         self.view.on_collision_end = lambda _: self.view.poly.reset_color() if not self.view.is_colliding() else None
         self.sensor.on_collision_start = lambda _: self.sensor.poly.set_color(fill=(255, 0, 0, 50))
         self.sensor.on_collision_end = lambda _: self.sensor.poly.reset_color() if not self.sensor.is_colliding() else None
@@ -88,12 +85,10 @@ class Fish(Entity):
         def draw_on_view(other: Collider):
             if self.cat == 1:
                 # self.view_surf.blit(other.poly.get_surface(), other.parent.prs.pos - self.prs.pos)
-                surf, rect = other.poly.get_surface()
-                surf = pygame.Surface(rect.size, pygame.SRCALPHA)
-                surf.fill((255, 0, 0, 50))
+                body_surf, rect = other.poly.get_surface()
                 topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
                 for rep in utils.get_wraps(rect):
-                    self.view_passives.blit(surf, topleft + rep)
+                    self.view_passives.blit(body_surf, topleft + rep)
         self.view.on_collision = draw_on_view
 
         # database
