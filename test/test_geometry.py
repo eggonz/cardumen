@@ -44,23 +44,6 @@ def test_posrotscale_clone():
     assert prs1.scale == prs2.scale
 
 
-def test_posrotscale_inverse():
-    prs1 = geometry.PosRotScale(Vector2(1, 2), 3, 4)
-    prs2 = prs1.inverse()
-    assert prs2.pos == (-1, -2)
-    assert prs2.rot == -3
-    assert prs2.scale == 0.25
-
-
-def test_posrotscale_apply():
-    prs1 = geometry.PosRotScale(Vector2(1, 2), 3, 4)
-    prs2 = geometry.PosRotScale(Vector2(5, 6), 7, 8)
-    prs1.apply(prs2)
-    assert prs1.pos == (1 + 5, 2 + 6)
-    assert prs1.rot == 3 + 7
-    assert prs1.scale == 4 * 8
-
-
 def test_posrotscale_properties(pi):
     prs = geometry.PosRotScale()
     # get rot_deg

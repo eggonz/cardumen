@@ -52,34 +52,19 @@ class PosRotScale:
         """
         return PosRotScale(self.pos.copy(), self.rot, self.scale)
 
-    def inverse(self) -> PosRotScale:
+    def relative_to(self, other: PosRotScale) -> PosRotScale:
         """
-        Create a new PosRotScale object representing the inverse transformation of this object.
+        Get the transformation of this object relative to another PosRotScale object.
 
-        :return: inverse transformation
+        :param other: other object
+        :return: transformation of this object relative to the other object
         """
-        return PosRotScale(-self.pos, -self.rot, 1 / self.scale)
-
-    def apply(self, transform: PosRotScale, pivot: PosRotScale = None) -> None:
-        """
-        Apply the transformation represented by another PosRotScale object to this object.
-        Optionally, the transformation can be applied around a pivot parent PosRotScale object.
-        If a pivot is present, the transformation is applied to self, but in the coordinate system of the pivot.
-
-        :param transform: transformation to apply
-        :param pivot: pivot to apply the transformation around
-        """
-        if pivot is not None:
-            self.pos -= pivot.pos
-            self.rot -= pivot.rot
-            self.scale /= pivot.scale
-        self.pos += transform.pos
-        self.rot += transform.rot
-        self.scale *= transform.scale
-        if pivot is not None:
-            self.pos += pivot.pos
-            self.rot += pivot.rot
-            self.scale *= pivot.scale
+        return PosRotScale(
+            # default Vector2 in clockwise rotation
+            (self.pos - other.pos).rotate(other.rot_deg) / other.scale,
+            self.rot - other.rot,
+            self.scale / other.scale
+        )
 
     @property
     def rot_deg(self) -> float:

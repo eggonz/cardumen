@@ -84,11 +84,12 @@ class Fish(Entity):
 
         def add_to_detection_canvas(other: Collider):
             if self.cat == 1:
-                poly2 = other.poly.clone()
-                poly2.prs.apply(self.view.poly.prs.inverse(), pivot=self.view.poly.prs)
-                body_surf, rect = poly2.get_surface(return_rect=True)
-                topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
                 for rep in utils.get_wraps():
+                    poly2 = other.poly.clone_at(other.poly.prs.pos + rep)
+                    prs_rel = poly2.prs.relative_to(self.view.poly.prs)
+                    poly2.prs = prs_rel
+                    body_surf, rect = poly2.get_surface(return_rect=True)
+                    topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
                     self.view_passives.blit(body_surf, topleft + rep)
 
         self.view.on_collision = add_to_detection_canvas
@@ -108,18 +109,12 @@ class Fish(Entity):
         self.prs.pos += self.vel * dt
 
         # update colliders
-        poly1 = self.view.poly.clone()
-        poly1.prs.apply(self.view.poly.prs.inverse(), pivot=self.view.poly.prs)
-        self.view_rect = poly1.get_rect()
-
+        self.view_rect = self.view.poly.get_rect_local()
         self.view_passives = pygame.Surface(self.view_rect.size, pygame.SRCALPHA)
         for collider in self.colliders:
             collider.update(dt)
         if self.view.is_colliding() and self.cat == 1:
-            poly1 = self.view.poly.clone()
-            poly1.prs.apply(self.view.poly.prs.inverse(), pivot=self.view.poly.prs)
-            view_surf = poly1.get_surface()
-
+            view_surf = self.view.poly.get_surface_local()
             view_surf.blit(self.view_passives, (0, 0))
             if Handler().config.plot_collider:
                 utils.plot_surf(view_surf)

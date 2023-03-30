@@ -133,6 +133,15 @@ class Polygon:
         lx, ly = zip(*self.points)
         return pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
 
+    def get_rect_local(self) -> pygame.Rect:
+        """
+        Get bounding box of the polygon, in local coordinates.
+
+        :return: bounding box
+        """
+        lx, ly = zip(*self._local_points)
+        return pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
+
     def get_surface(self, return_rect=False) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
         """
         Get pygame surface of the polygon, in global coordinates.
@@ -147,6 +156,37 @@ class Polygon:
         if return_rect:
             return surface, rect
         return surface
+
+    def get_surface_local(self, return_rect=False) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
+        """
+        Get pygame surface of the polygon, in local coordinates.
+        Optionally return the bounding box of the polygon.
+
+        :return: pygame surface or (surface, rect)
+        """
+        rect = self.get_rect_local()
+        surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+        offset_points = [(p[0] - rect.x, p[1] - rect.y) for p in self._local_points]
+        pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
+        if return_rect:
+            return surface, rect
+        return surface
+
+    # def get_surface(self, return_rect=False, local=True) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
+    #     """
+    #     Get pygame surface of the polygon, in global (or local) coordinates.
+    #     Optionally return the bounding box of the polygon.
+    #
+    #     :return: pygame surface or (surface, rect)
+    #     """
+    #     points = self.local_points if local else self.points
+    #     rect = utils.get_rect(points)
+    #     surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+    #     offset_points = [(p[0] - rect.x, p[1] - rect.y) for p in points]
+    #     pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
+    #     if return_rect:
+    #         return surface, rect
+    #     return surface
 
 
 class Intersection:
