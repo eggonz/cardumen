@@ -9,7 +9,7 @@ from cardumen.geometry import PosRotScale, rad2deg
 
 
 class Polygon:
-    def __init__(self, prs: PosRotScale, points: list[Vector2],
+    def __init__(self, prs: PosRotScale, local_points: list[Vector2],
                  fill_color: tuple = (0, 0, 0, 0), line_color: tuple = (0, 0, 0, 0)):
         """
         Create polygon from points.
@@ -19,12 +19,12 @@ class Polygon:
         PRS controls the rotation and scale of the polygon.
 
         :param prs: position, rotation, scale
-        :param points: list if points
+        :param local_points: list if points
         :param fill_color: fill color
         :param line_color: line color
         """
         self.prs = prs
-        self._local_points = points  # local coordinates
+        self.local_points = local_points  # local coordinates
         self.fill_color = fill_color
         self.line_color = line_color
         self._initial_fill_color = fill_color
@@ -37,7 +37,7 @@ class Polygon:
         :param move: position displacement
         :return:
         """
-        self._local_points = [p + move for p in self._local_points]
+        self.local_points = [p + move for p in self.local_points]
         return self
 
     def rot_local(self, rot: float = 0) -> Polygon:
@@ -47,7 +47,7 @@ class Polygon:
         :param rot: rotation angle, in radians, positive counterclockwise
         :return:
         """
-        self._local_points = [p.rotate(-rad2deg(rot)) for p in self._local_points]
+        self.local_points = [p.rotate(-rad2deg(rot)) for p in self.local_points]
         return self
 
     def scale_local(self, scale: float = 1) -> Polygon:
@@ -57,7 +57,7 @@ class Polygon:
         :param scale: scaling factor
         :return:
         """
-        self._local_points = [scale * p for p in self._local_points]
+        self.local_points = [scale * p for p in self.local_points]
         return self
 
     def render(self, display: Display) -> None:
@@ -76,7 +76,7 @@ class Polygon:
 
         :return: list of points
         """
-        return [(self.prs.scale * p.rotate(-self.prs.rot_deg) + self.prs.pos) for p in self._local_points]
+        return [(self.prs.scale * p.rotate(-self.prs.rot_deg) + self.prs.pos) for p in self.local_points]
 
     def clone(self) -> Polygon:
         """
@@ -85,7 +85,7 @@ class Polygon:
         :return: new polygon
         """
         # return Polygon(self.prs.clone(), [p.copy() for p in self._local_points], self.fill_color, self.line_color)
-        return Polygon(self.prs.clone(), self._local_points, self.fill_color, self.line_color)
+        return Polygon(self.prs.clone(), self.local_points, self.fill_color, self.line_color)
 
     def clone_at(self, pos: Vector2) -> Polygon:
         """
@@ -124,69 +124,22 @@ class Polygon:
         self.fill_color = self._initial_fill_color
         self.line_color = self._initial_line_color
 
-    def get_rect(self) -> pygame.Rect:
+    def get_surface(self, return_rect=False, local=False) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
         """
-        Get bounding box of the polygon, in global coordinates.
-
-        :return: bounding box
-        """
-        lx, ly = zip(*self.points)
-        return pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
-
-    def get_rect_local(self) -> pygame.Rect:
-        """
-        Get bounding box of the polygon, in local coordinates.
-
-        :return: bounding box
-        """
-        lx, ly = zip(*self._local_points)
-        return pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
-
-    def get_surface(self, return_rect=False) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
-        """
-        Get pygame surface of the polygon, in global coordinates.
+        Get pygame surface of the polygon, in global (or local) coordinates.
         Optionally return the bounding box of the polygon.
 
         :return: pygame surface or (surface, rect)
         """
-        rect = self.get_rect()
-        surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-        offset_points = [(p[0] - rect.x, p[1] - rect.y) for p in self.points]
+        points = self.local_points if local else self.points
+        rect = utils.get_rect(points)
+        surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        offset_points = [(p[0] - rect.x, p[1] - rect.y) for p in points]
         pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
+        pygame.draw.lines(surface, self.fill_color[:3], True, offset_points, 1)
         if return_rect:
             return surface, rect
         return surface
-
-    def get_surface_local(self, return_rect=False) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
-        """
-        Get pygame surface of the polygon, in local coordinates.
-        Optionally return the bounding box of the polygon.
-
-        :return: pygame surface or (surface, rect)
-        """
-        rect = self.get_rect_local()
-        surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-        offset_points = [(p[0] - rect.x, p[1] - rect.y) for p in self._local_points]
-        pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
-        if return_rect:
-            return surface, rect
-        return surface
-
-    # def get_surface(self, return_rect=False, local=True) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
-    #     """
-    #     Get pygame surface of the polygon, in global (or local) coordinates.
-    #     Optionally return the bounding box of the polygon.
-    #
-    #     :return: pygame surface or (surface, rect)
-    #     """
-    #     points = self.local_points if local else self.points
-    #     rect = utils.get_rect(points)
-    #     surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-    #     offset_points = [(p[0] - rect.x, p[1] - rect.y) for p in points]
-    #     pygame.draw.polygon(surface, self.fill_color[:3], offset_points)
-    #     if return_rect:
-    #         return surface, rect
-    #     return surface
 
 
 class Intersection:

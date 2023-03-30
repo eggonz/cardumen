@@ -6,6 +6,11 @@ from pygame import Vector2
 from cardumen.handler import Handler
 
 
+def get_rect(points: list[Vector2]) -> pygame.Rect:
+    lx, ly = zip(*points)
+    return pygame.Rect(min(lx) - 1, min(ly) - 1, max(lx) - min(lx) + 2, max(ly) - min(ly) + 2)
+
+
 def get_wraps(rect: pygame.Rect = None) -> list[Vector2]:
     width, height = Handler().config.WINDOW_SIZE
 
