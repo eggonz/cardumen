@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import numpy as np
 import pygame
 from pygame import Vector2
 
 from cardumen import utils
 from cardumen.display import Display
 from cardumen.geometry import PosRotScale, rad2deg
+from cardumen.projection import Projection
 
 
 class Polygon:
@@ -19,46 +21,16 @@ class Polygon:
         PRS controls the rotation and scale of the polygon.
 
         :param prs: position, rotation, scale
-        :param local_points: list if points
+        :param local_points: list of points
         :param fill_color: fill color
         :param line_color: line color
         """
         self.prs = prs
-        self.local_points = local_points  # local coordinates
+        self._local_points = local_points  # local coordinates
         self.fill_color = fill_color
         self.line_color = line_color
         self._initial_fill_color = fill_color
         self._initial_line_color = line_color
-
-    def move_local(self, move: Vector2 = Vector2()) -> Polygon:
-        """
-        Applies displacement to the points in local coordinates.
-
-        :param move: position displacement
-        :return:
-        """
-        self.local_points = [p + move for p in self.local_points]
-        return self
-
-    def rot_local(self, rot: float = 0) -> Polygon:
-        """
-        Applies rotation to the points in local coordinates w.r.t. the origin ((0,0))
-
-        :param rot: rotation angle, in radians, positive counterclockwise
-        :return:
-        """
-        self.local_points = [p.rotate(-rad2deg(rot)) for p in self.local_points]
-        return self
-
-    def scale_local(self, scale: float = 1) -> Polygon:
-        """
-        Scales the position of the points in local coordinates w.r.t. the origin ((0,0))
-
-        :param scale: scaling factor
-        :return:
-        """
-        self.local_points = [scale * p for p in self.local_points]
-        return self
 
     def render(self, display: Display) -> None:
         """
@@ -69,23 +41,13 @@ class Polygon:
         """
         display.draw_polygon(self.points, self.fill_color, self.line_color)
 
-    @property
-    def points(self) -> list[Vector2]:
-        """
-        Get points in global coordinates.
-
-        :return: list of points
-        """
-        return [(self.prs.scale * p.rotate(-self.prs.rot_deg) + self.prs.pos) for p in self.local_points]
-
     def clone(self) -> Polygon:
         """
         Clone polygon.
 
         :return: new polygon
         """
-        # return Polygon(self.prs.clone(), [p.copy() for p in self._local_points], self.fill_color, self.line_color)
-        return Polygon(self.prs.clone(), self.local_points, self.fill_color, self.line_color)
+        return self.__class__(self.prs.clone(), self.local_points, self.fill_color, self.line_color)
 
     def clone_at(self, pos: Vector2) -> Polygon:
         """
@@ -114,16 +76,6 @@ class Polygon:
         else:
             return Intersection.intersect(self, other)
 
-    def set_color(self, fill: tuple = None, line: tuple = None) -> None:
-        if fill:
-            self.fill_color = fill
-        if line:
-            self.line_color = line
-
-    def reset_color(self) -> None:
-        self.fill_color = self._initial_fill_color
-        self.line_color = self._initial_line_color
-
     def get_surface(self, return_rect=False, local=False) -> pygame.Surface | tuple[pygame.Surface, pygame.Rect]:
         """
         Get pygame surface of the polygon, in global (or local) coordinates.
@@ -140,6 +92,65 @@ class Polygon:
         if return_rect:
             return surface, rect
         return surface
+
+    def set_color(self, fill: tuple = None, line: tuple = None) -> None:
+        if fill:
+            self.fill_color = fill
+        if line:
+            self.line_color = line
+
+    def reset_color(self) -> None:
+        self.fill_color = self._initial_fill_color
+        self.line_color = self._initial_line_color
+
+    @property
+    def local_points(self) -> list[Vector2]:
+        """
+        Get points in local coordinates.
+
+        :return: list of points
+        """
+        return [p for p in self._local_points]
+
+    @property
+    def points(self) -> list[Vector2]:
+        """
+        Get points in global coordinates.
+
+        :return: list of points
+        """
+        return [(self.prs.scale * p.rotate(-self.prs.rot_deg) + self.prs.pos) for p in self._local_points]
+
+
+class ConvexQuad(Polygon):
+    def __init__(self, prs: PosRotScale, local_points: list[Vector2],
+                 fill_color: tuple = (0, 0, 0, 0), line_color: tuple = (0, 0, 0, 0)):
+        if len(local_points) != 4:
+            raise ValueError("ConvexQuad must have 4 points")
+        if not utils.check_convex_polygon(local_points):
+            raise ValueError("ConvexQuad must be convex")
+        super().__init__(prs, local_points, fill_color, line_color)
+
+        self._define_projection()
+
+    def _define_projection(self):
+        points = self.local_points
+        # largest side of the polygon
+        max_side = max([p.distance_to(q) for p, q in zip(points, points[1:] + [points[0]])])
+        # define projection to square
+        rect = utils.get_rect(points)
+        points = [Vector2(p[0] - rect.x, p[1] - rect.y) for p in points]
+        self._projection = Projection(points, output_size=(max_side, max_side))
+
+    def project(self, surf_local: pygame.Surface) -> np.ndarray:
+        """
+        Project the polygon onto a square.
+
+        :param surf_local: surface to project to
+        :return:
+        """
+        arr = utils.surf2arr(surf_local)
+        return self._projection(arr)
 
 
 class Intersection:

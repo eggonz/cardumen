@@ -11,9 +11,9 @@ from cardumen.collision import Collider
 from cardumen.control import Action, Agent
 from cardumen.database import Table
 from cardumen.entities import Entity
-from cardumen.geometry import PosRotScale, deg2rad
+from cardumen.geometry import PosRotScale, deg2rad, scale_points, rotate_points, move_points
 from cardumen.handler import Handler
-from cardumen.shapes import Polygon
+from cardumen.shapes import Polygon, ConvexQuad
 from cardumen.sprite import Sprite
 
 
@@ -54,23 +54,25 @@ class Fish(Entity):
 
         # trapezoid view
         w, h = self.sprite.width, self.sprite.height
-        trapezoid = Polygon(self.prs, [Vector2(-1, 0), Vector2(1, 0), Vector2(6, 12), Vector2(-6, 12)],
-                            fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
-        view = trapezoid.scale_local(h / 2).rot_local(deg2rad(90)).move_local(Vector2(w / 2 + 4, 0))
-        self.view = Collider(self, view, 'fish view', detect='fish body')
+        points = [Vector2(2, 0), Vector2(6, 12), Vector2(-6, 12), Vector2(-2, 0)]
+        points = scale_points(points, h / 2)
+        points = rotate_points(points, deg2rad(90))
+        points = move_points(points, Vector2(0.75 * w / 2, 0))
+        self.view_trapezoid = ConvexQuad(self.prs, points, fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
+        self.view = Collider(self, self.view_trapezoid, 'fish view', detect='fish body')
 
         # body rect collider
-        rect = Polygon(self.prs, [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)],
-                       fill_color=(0, 255, 0, 50), line_color=(0, 255, 0, 255))
-        body = rect.move_local(Vector2(-w / 2, -h / 2))
+        points = [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)]
+        points = move_points(points, Vector2(-w / 2, -h / 2))
+        body = Polygon(self.prs, points, fill_color=(0, 255, 0, 50), line_color=(0, 255, 0, 255))
         self.body = Collider(self, body, 'fish body')
 
         # proximity sense hexagon collider
         l = 100  # side length
         a = l / 2 * (3 ** .5)  # apothem
-        hexagon_points = [Vector2(0, -l), Vector2(a, -l / 2), Vector2(a, l / 2), Vector2(0, l),
-                          Vector2(-a, l / 2), Vector2(-a, -l / 2)]
-        sensor = Polygon(self.prs, hexagon_points, fill_color=(0, 0, 255, 50), line_color=(0, 0, 255, 255))
+        points = [Vector2(0, -l), Vector2(a, -l / 2), Vector2(a, l / 2), Vector2(0, l), Vector2(-a, l / 2),
+                  Vector2(-a, -l / 2)]
+        sensor = Polygon(self.prs, points, fill_color=(0, 0, 255, 50), line_color=(0, 0, 255, 255))
         self.sensor = Collider(self, sensor, 'fish sensor', detect='fish body')
 
         self.add_colliders(self.view, self.body, self.sensor)
@@ -116,7 +118,10 @@ class Fish(Entity):
             view_surf = self.view.poly.get_surface(local=True)
             view_surf.blit(self.view_passives, (0, 0))
             if Handler().config.plot_collider:
-                utils.plot_surf(view_surf)
+                arr = utils.surf2arr(view_surf)
+                utils.plot_arr(arr)
+                arr = self.view_trapezoid.project(view_surf)
+                utils.plot_arr(arr)
 
         # update database
         self.db_table.add(time.time(), self.get_state())

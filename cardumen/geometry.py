@@ -27,6 +27,40 @@ def deg2rad(deg: float) -> float:
     return deg * 2.0 * math.pi / 360
 
 
+def scale_points(points: list[Vector2], scale: float) -> list[Vector2]:
+    """
+    Scale points by scale around the origin.
+
+    :param points:
+    :param scale:
+    :return:
+    """
+    return [p * scale for p in points]
+
+
+def rotate_points(points: list[Vector2], angle: float) -> list[Vector2]:
+    """
+    Rotate points by angle around the origin.
+    Angle is in radians and positive is counterclockwise.
+
+    :param points:
+    :param angle:
+    :return:
+    """
+    return [p.rotate(-rad2deg(angle)) for p in points]
+
+
+def move_points(points: list[Vector2], offset: Vector2) -> list[Vector2]:
+    """
+    Move points by offset.
+
+    :param points:
+    :param offset:
+    :return:
+    """
+    return [p + offset for p in points]
+
+
 class PosRotScale:
     """
     Class to represent position, rotation and scale of an object.

@@ -8,7 +8,7 @@ from cardumen.handler import Handler
 
 def get_rect(points: list[Vector2]) -> pygame.Rect:
     lx, ly = zip(*points)
-    return pygame.Rect(min(lx) - 1, min(ly) - 1, max(lx) - min(lx) + 2, max(ly) - min(ly) + 2)
+    return pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
 
 
 def get_wraps(rect: pygame.Rect = None) -> list[Vector2]:
@@ -53,9 +53,22 @@ def get_wraps(rect: pygame.Rect = None) -> list[Vector2]:
     return repeats
 
 
-def plot_surf(surf: pygame.Surface):
-    arr = pygame.surfarray.array3d(surf)
-    arr = np.transpose(arr, (1, 0, 2))
+def check_convex_polygon(points: list[Vector2]) -> bool:
+    # cv2.isContourConvex, scipy.spatial.ConvexHull, etc. are too slow/heavy
+    if len(points) < 3:
+        return False
+    for i in range(len(points)):
+        a, b, c = points[i - 1], points[i], points[(i + 1) % len(points)]
+        if (b - a).cross(c - b) < 0:
+            return False
+    return True
+
+
+def surf2arr(surf: pygame.Surface) -> np.ndarray:
+    return np.transpose(pygame.surfarray.array3d(surf), (1, 0, 2))
+
+
+def plot_arr(arr: np.ndarray):
     plt.imshow(arr)
     plt.axis('off')
     plt.show()
