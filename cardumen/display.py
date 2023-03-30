@@ -36,3 +36,9 @@ class Display:
             pygame.draw.polygon(surf, fill_color, points)
             pygame.draw.lines(surf, line_color, True, points)
         self.screen.blit(surf, (0, 0))
+
+    def draw_grid(self, size: int = 100):
+        for i in range(0, int(self.screen_size.x), size):
+            pygame.draw.line(self.screen, (0, 0, 0, 50), (i, 0), (i, self.screen_size.y))
+        for i in range(0, int(self.screen_size.y), size):
+            pygame.draw.line(self.screen, (0, 0, 0, 50), (0, i), (self.screen_size.x, i))

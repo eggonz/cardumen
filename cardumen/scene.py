@@ -52,3 +52,6 @@ class PlaygroundScene:
         for layer in sorted(self.layers, reverse=True):
             for entity in self.layers[layer]:
                 entity.render(display)
+        if Handler().config.DEBUG:
+            display.draw_grid()
+
