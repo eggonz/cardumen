@@ -26,3 +26,4 @@ class Config:
         self.TESTING = config['testing']
         self.RENDER = config['render']
         self.n_fish = config.get('paramNFish', 2)
+        self.plot_collider = config.get('paramPlotCollider', False)

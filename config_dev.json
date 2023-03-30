@@ -15,5 +15,6 @@
   "debug": true,
   "testing": true,
   "render": true,
-  "paramNFish": 3
+  "paramNFish": 5,
+  "paramPlotCollider": true
 }

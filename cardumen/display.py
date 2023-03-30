@@ -16,16 +16,23 @@ class Display:
     def draw_sprite(self, sprite: Sprite, prs: PosRotScale, wrap=True):
         img = sprite.get_transformed(prs.rot, prs.scale)
         rect = img.get_rect(center=prs.pos)
-        for neighbor in utils.get_wraps(rect, wrap and Handler().config.WRAP):
-            self.screen.blit(img, img.get_rect(center=prs.pos + neighbor))
+        if wrap and Handler().config.WRAP:
+            for neighbor in utils.get_wraps(rect):
+                self.screen.blit(img, img.get_rect(center=prs.pos + neighbor))
+        else:
+            self.screen.blit(img, rect)
 
     def draw_polygon(self, points: list[Vector2], fill_color: tuple = (0, 0, 0, 0), line_color: tuple = (0, 0, 0, 0),
                      wrap=True):
         surf = pygame.Surface(self.screen_size, pygame.SRCALPHA)
         lx, ly = zip(*points)
         rect = pygame.Rect(min(lx), min(ly), max(lx) - min(lx), max(ly) - min(ly))
-        for neighbor in utils.get_wraps(rect, wrap and Handler().config.WRAP):
-            npoints = [p + neighbor for p in points]
-            pygame.draw.polygon(surf, fill_color, npoints)
-            pygame.draw.lines(surf, line_color, True, npoints)
+        if wrap and Handler().config.WRAP:
+            for neighbor in utils.get_wraps(rect):
+                npoints = [p + neighbor for p in points]
+                pygame.draw.polygon(surf, fill_color, npoints)
+                pygame.draw.lines(surf, line_color, True, npoints)
+        else:
+            pygame.draw.polygon(surf, fill_color, points)
+            pygame.draw.lines(surf, line_color, True, points)
         self.screen.blit(surf, (0, 0))

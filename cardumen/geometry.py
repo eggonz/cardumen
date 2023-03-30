@@ -50,7 +50,7 @@ class PosRotScale:
 
         :return: copy of this object
         """
-        return PosRotScale(self.pos, self.rot, self.scale)
+        return PosRotScale(self.pos.copy(), self.rot, self.scale)
 
     def inverse(self) -> PosRotScale:
         """

@@ -82,15 +82,16 @@ class Fish(Entity):
         self.sensor.on_collision_end = lambda \
             _: self.sensor.poly.reset_color() if not self.sensor.is_colliding() else None
 
-        def draw_on_view(other: Collider):
+        def add_to_detection_canvas(other: Collider):
             if self.cat == 1:
-                # self.view_surf.blit(other.poly.get_surface(), other.parent.prs.pos - self.prs.pos)
-                body_surf, rect = other.poly.get_surface()
+                poly2 = other.poly.clone()
+                poly2.prs.apply(self.view.poly.prs.inverse())
+                body_surf, rect = poly2.get_surface(return_rect=True)
                 topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
-                for rep in utils.get_wraps(rect):
+                for rep in utils.get_wraps():
                     self.view_passives.blit(body_surf, topleft + rep)
 
-        self.view.on_collision = draw_on_view
+        self.view.on_collision = add_to_detection_canvas
 
         # database
         self.db_table = Table(Handler().db, f'fish{cat}')
@@ -107,14 +108,21 @@ class Fish(Entity):
         self.prs.pos += self.vel * dt
 
         # update colliders
-        _, self.view_rect = self.view.poly.get_surface()
+        poly1 = self.view.poly.clone()
+        poly1.prs.apply(self.view.poly.prs.inverse())
+        self.view_rect = poly1.get_rect()
+
         self.view_passives = pygame.Surface(self.view_rect.size, pygame.SRCALPHA)
         for collider in self.colliders:
             collider.update(dt)
         if self.view.is_colliding() and self.cat == 1:
-            view_surf, self.view_rect = self.view.poly.get_surface()
+            poly1 = self.view.poly.clone()
+            poly1.prs.apply(self.view.poly.prs.inverse())
+            view_surf = poly1.get_surface()
+
             view_surf.blit(self.view_passives, (0, 0))
-            utils.plot_surf(view_surf)
+            if Handler().config.plot_collider:
+                utils.plot_surf(view_surf)
 
         # update database
         self.db_table.add(time.time(), self.get_state())
@@ -123,4 +131,4 @@ class Fish(Entity):
         return np.array([*self.prs.pos, *self.vel])
 
     def __repr__(self):
-        return f'Fish({self.cat})'
+        return f'Fish(cat={self.cat})'

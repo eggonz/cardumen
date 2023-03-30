@@ -35,35 +35,44 @@ class Collider:
 
         Collider._TAG_INDEX[tag].append(self)
 
-        self._colliding = defaultdict(bool)
+        self._colliding = {}
 
     def check_collisions(self) -> None:
         """
-        Check collisions.
+        Check for collisions.
+        First, all colliders with the same tag as this collider are retrieved from the index.
+        Then, for each collider, the polygons are checked for intersection.
+        Once all collisions are detected, the callbacks are called.
 
         :return:
         """
         if self._detect is None:
             return
 
-        for other in self._TAG_INDEX[self._detect]:
+        last_colliding = self._colliding.copy()
+        self._colliding.clear()
+        targets = self._TAG_INDEX[self._detect]
+        # check for collisions
+        for other in targets:
             if other == self:
                 continue
             if self._ignore_self and other.parent == self.parent:
                 continue
             if self.poly.intersects(other.poly):
-                if not self._colliding[other]:
-                    self._colliding[other] = True
+                self._colliding[other] = True
+        # call callbacks
+        for other in targets:
+            if self._colliding.get(other):
+                if not last_colliding.get(other):
                     self.on_collision_start(other)
                 self.on_collision(other)
             else:
-                if self._colliding[other]:
-                    self._colliding.pop(other)  # instead of setting to False, remove key to save memory
+                if last_colliding.get(other):
                     self.on_collision_end(other)
 
     def update(self, dt: float) -> None:
         """
-        Update collider.
+        Update collider. Checks for collisions and calls callbacks.
 
         :param dt: time since last update
         :return:
@@ -124,4 +133,4 @@ class Collider:
         pass
 
     def __repr__(self):
-        return f'Collider({self.parent}, {self.poly}, {self.tag}, {self._detect}, {self._ignore_self})'
+        return f'Collider(parent={self.parent}, poly={self.poly}, tag={self.tag}, detect={self._detect})'
