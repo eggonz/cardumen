@@ -3,24 +3,19 @@ In this module we define the class that controls the movement of the fish in the
 Fish have two possible actions tilt right and tilt left.
 """
 import random
-from enum import Enum
 
 import numpy as np
 
 
-class Action(Enum):
-    def execute(self, *args, **kwargs):
-        pass
-
-
 class Agent:
-    def __init__(self, actions: list[Action]):
-        self.actions = actions
+    def __init__(self, num_labels: int):
+        self.num_labels = num_labels
 
-    def act(self, state: list[np.ndarray]) -> Action:
+    def act(self, state: list[np.ndarray]) -> int:
         """
         Get action from agent.
+
         :param state: current state
-        :return: action
+        :return: action label
         """
-        return random.choice(self.actions)
+        return random.randint(0, self.num_labels - 1)

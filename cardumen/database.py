@@ -17,7 +17,10 @@ class BinaryConverter:
         # check if shape is resizeable
         if arr.shape != self._shape and arr.size() != np.prod(self._shape):
             raise ValueError(f"Shape of array {arr.shape} does not match expected shape {self._shape}")
-        arr_bytes = arr.astype(self._dtype).tobytes()
+        try:
+            arr_bytes = arr.astype(self._dtype).tobytes()
+        except:
+            log.warning(f"Error converting array to bytes")
         return arr_bytes
 
     def from_bytes(self, arr_bytes: bytes) -> np.ndarray:

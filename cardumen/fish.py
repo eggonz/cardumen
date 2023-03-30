@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from enum import Enum
 
 import numpy as np
 import pygame
@@ -8,7 +9,7 @@ from pygame import Vector2
 
 from cardumen import utils
 from cardumen.collision import Collider
-from cardumen.control import Action, Agent
+from cardumen.control import Agent
 from cardumen.database import Table
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad, scale_points, rotate_points, move_points
@@ -18,18 +19,28 @@ from cardumen.shapes import Polygon, ConvexQuad
 from cardumen.sprite import Sprite
 
 
-class Swim(Action):
+class Swim(Enum):
     NONE = 0
-    RIGHT = -1
-    LEFT = 1
-    RIGHTx3 = -3
-    LEFTx3 = 3
-    FASTER = 0, 1.1
-    SLOWER = 0, 0.9
+    RIGHT = 1
+    LEFT = 2
+    RIGHTx2 = 3
+    LEFTx2 = 4
+    FASTER = 5
+    SLOWER = 6
 
-    def __init__(self, tilt_sign: float, vel_multiplier: float = 1):
-        self._tilt_sign = tilt_sign
-        self._vel_multiplier = vel_multiplier
+    def __init__(self, id_: int):
+        self.id = id_
+        tilt, vel = {
+            0: (0, 1),
+            1: (1, 1),
+            2: (-1, 1),
+            3: (2, 1),
+            4: (-2, 1),
+            5: (0, 1.1),
+            6: (0, .9),
+        }[id_]
+        self._tilt_sign = tilt
+        self._vel_multiplier = vel
 
     def execute(self, fish: Fish, dt: float) -> None:
         fish.prs.rot += self._tilt_sign * dt * fish.tilt_speed
@@ -51,7 +62,7 @@ class Fish(Entity):
         self.vel = Vector2()
         self.vel.from_polar((self.speed, -self.prs.rot_deg))
 
-        self._agent = Agent(list(Swim))
+        self._agent = Agent(len(list(Swim)))
 
         # trapezoid view
         w, h = self.sprite.width, self.sprite.height
@@ -98,7 +109,7 @@ class Fish(Entity):
         self.view.on_collision = add_to_detection_canvas
 
         self.view_detect = None
-        self.view_state = np.empty((*self.view_projection.output_size, 3))
+        self.view_state = np.zeros((*self.view_projection.output_size, 3))
 
         # database
         self.db_table = Table(Handler().db, f'fish{cat}', Handler().config.DATA_CONFIG)
@@ -106,7 +117,8 @@ class Fish(Entity):
 
     def update(self, dt: float) -> None:
         # choose action
-        action = self._agent.act(self.get_state())
+        label = self._agent.act(self.get_state())
+        action = Swim(label)
         action.execute(self, dt)
 
         # update position
