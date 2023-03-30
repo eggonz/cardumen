@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import numpy as np
 import pygame
 from pygame import Vector2
 
 from cardumen import utils
 from cardumen.display import Display
-from cardumen.geometry import PosRotScale, rad2deg
-from cardumen.projection import Projection
+from cardumen.geometry import PosRotScale
 
 
 class Polygon:
@@ -130,27 +128,6 @@ class ConvexQuad(Polygon):
         if not utils.check_convex_polygon(local_points):
             raise ValueError("ConvexQuad must be convex")
         super().__init__(prs, local_points, fill_color, line_color)
-
-        self._define_projection()
-
-    def _define_projection(self):
-        points = self.local_points
-        # largest side of the polygon
-        max_side = max([p.distance_to(q) for p, q in zip(points, points[1:] + [points[0]])])
-        # define projection to square
-        rect = utils.get_rect(points)
-        points = [Vector2(p[0] - rect.x, p[1] - rect.y) for p in points]
-        self._projection = Projection(points, output_size=(max_side, max_side))
-
-    def project(self, surf_local: pygame.Surface) -> np.ndarray:
-        """
-        Project the polygon onto a square.
-
-        :param surf_local: surface to project to
-        :return:
-        """
-        arr = utils.surf2arr(surf_local)
-        return self._projection(arr)
 
 
 class Intersection:

@@ -13,6 +13,7 @@ from cardumen.database import Table
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad, scale_points, rotate_points, move_points
 from cardumen.handler import Handler
+from cardumen.projection import Projection
 from cardumen.shapes import Polygon, ConvexQuad
 from cardumen.sprite import Sprite
 
@@ -58,8 +59,9 @@ class Fish(Entity):
         points = scale_points(points, h / 2)
         points = rotate_points(points, deg2rad(90))
         points = move_points(points, Vector2(0.75 * w / 2, 0))
-        self.view_trapezoid = ConvexQuad(self.prs, points, fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
-        self.view = Collider(self, self.view_trapezoid, 'fish view', detect='fish body')
+        view = ConvexQuad(self.prs, points, fill_color=(255, 255, 255, 50), line_color=(0, 0, 0, 255))
+        self.view = Collider(self, view, 'fish view', detect='fish body')
+        self.view_projection = Projection.from_convex_quad(view)
 
         # body rect collider
         points = [Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)]
@@ -82,16 +84,16 @@ class Fish(Entity):
         self.view.on_collision_end = lambda _: self.view.poly.reset_color() if not self.view.is_colliding() else None
         self.sensor.on_collision_start = lambda _: self.sensor.poly.set_color(fill=(255, 0, 0, 50))
         self.sensor.on_collision_end = lambda \
-            _: self.sensor.poly.reset_color() if not self.sensor.is_colliding() else None
+                _: self.sensor.poly.reset_color() if not self.sensor.is_colliding() else None
 
         def add_to_detection_canvas(other: Collider):
-            if self.cat == 1:
-                for rep in utils.get_wraps():
-                    poly2 = other.poly.clone_at(other.poly.prs.pos + rep)
-                    poly2.prs = poly2.prs.relative_to(self.view.poly.prs)
-                    body_surf, rect = poly2.get_surface(return_rect=True)
-                    topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
-                    self.view_passives.blit(body_surf, topleft)
+            for rep in utils.get_wraps():
+                poly2 = other.poly.clone_at(other.poly.prs.pos + rep)
+                poly2.prs = poly2.prs.relative_to(self.view.poly.prs)
+                body_surf, body_rect = poly2.get_surface(return_rect=True)
+                view_rect = utils.get_rect(self.view.poly.local_points)
+                topleft = Vector2(body_rect.topleft) - Vector2(view_rect.topleft)
+                self.view_detect.blit(body_surf, topleft)
 
         self.view.on_collision = add_to_detection_canvas
 
@@ -110,17 +112,13 @@ class Fish(Entity):
         self.prs.pos += self.vel * dt
 
         # update colliders
-        self.view_rect = utils.get_rect(self.view.poly.local_points)
-        self.view_passives = pygame.Surface(self.view_rect.size, pygame.SRCALPHA)
+        view_rect = utils.get_rect(self.view.poly.local_points)
+        self.view_detect = pygame.Surface(view_rect.size, pygame.SRCALPHA)
         for collider in self.colliders:
             collider.update(dt)
         if self.view.is_colliding() and self.cat == 1:
-            view_surf = self.view.poly.get_surface(local=True)
-            view_surf.blit(self.view_passives, (0, 0))
             if Handler().config.plot_collider:
-                arr = utils.surf2arr(view_surf)
-                utils.plot_arr(arr)
-                arr = self.view_trapezoid.project(view_surf)
+                arr = self.view_projection(utils.surf2arr(self.view_detect))
                 utils.plot_arr(arr)
 
         # update database

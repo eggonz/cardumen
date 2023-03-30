@@ -54,4 +54,3 @@ class PlaygroundScene:
                 entity.render(display)
         if Handler().config.DEBUG:
             display.draw_grid()
-
