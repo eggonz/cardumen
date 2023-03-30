@@ -13,7 +13,6 @@ from cardumen.database import Table
 from cardumen.entities import Entity
 from cardumen.geometry import PosRotScale, deg2rad
 from cardumen.handler import Handler
-from cardumen.logger import log
 from cardumen.shapes import Polygon
 from cardumen.sprite import Sprite
 
@@ -37,10 +36,10 @@ class Swim(Action):
 
 
 class Fish(Entity):
-    def __init__(self, handler: Handler, prs: PosRotScale, cat: int = 1):
+    def __init__(self, prs: PosRotScale, cat: int = 1):
         if not 1 <= cat <= 7:
             raise ValueError("cat must be in [1, 7]")
-        super().__init__(handler, prs, Sprite(f"assets/fish{cat}.png", rot=deg2rad(-90), scale=.05))
+        super().__init__(prs, Sprite(f"assets/fish{cat}.png", rot=deg2rad(-90), scale=.05))
         self.cat = cat
 
         base_speed = 200
@@ -80,7 +79,8 @@ class Fish(Entity):
         self.view.on_collision_start = lambda _: self.view.poly.set_color(fill=(255, 0, 0, 50))
         self.view.on_collision_end = lambda _: self.view.poly.reset_color() if not self.view.is_colliding() else None
         self.sensor.on_collision_start = lambda _: self.sensor.poly.set_color(fill=(255, 0, 0, 50))
-        self.sensor.on_collision_end = lambda _: self.sensor.poly.reset_color() if not self.sensor.is_colliding() else None
+        self.sensor.on_collision_end = lambda \
+            _: self.sensor.poly.reset_color() if not self.sensor.is_colliding() else None
 
         def draw_on_view(other: Collider):
             if self.cat == 1:
@@ -89,10 +89,11 @@ class Fish(Entity):
                 topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
                 for rep in utils.get_wraps(rect):
                     self.view_passives.blit(body_surf, topleft + rep)
+
         self.view.on_collision = draw_on_view
 
         # database
-        self.db_table = Table(self._handler.db, f'fish{cat}')
+        self.db_table = Table(Handler().db, f'fish{cat}')
         self.db_table.create()
 
     def update(self, dt: float) -> None:

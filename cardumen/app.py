@@ -29,7 +29,7 @@ class App:
         set_log_file(config.LOG_FILE)
         log.info("Starting app")
 
-        self._handler = Handler(config)
+        Handler().set_config(config)
 
         pygame.init()
 
@@ -37,18 +37,18 @@ class App:
         if config.RENDER:
             log.info("Rendering enabled")
             self._render_thread = threading.Thread(target=self._run_render)
-            self.display = Display(self._handler, config.WINDOW_SIZE)
+            self.display = Display(config.WINDOW_SIZE)
         else:
             log.info("Rendering disabled")
 
         if config.TESTING and os.path.exists(config.DB_PATH):
             os.remove(config.DB_PATH)
         self.db = Database(config.DB_PATH, config.DB_BUFFER_SIZE)
-        self._handler.db = self.db
+        Handler().set_db(self.db)
         self.db.connect()
 
-        self.scene = PlaygroundScene(self._handler)
-        self._handler.scene = self.scene
+        self.scene = PlaygroundScene()
+        Handler().set_scene(self.scene)
 
     def run(self) -> None:
         """
@@ -59,7 +59,7 @@ class App:
         """
         log.info("Running app")
         self.running = True
-        if self._handler.config.RENDER:
+        if Handler().config.RENDER:
             self._render_thread.start()
 
         try:
@@ -82,8 +82,8 @@ class App:
                     break
 
                 # update the scene every UPDATE_RATE seconds
-                if pygame.time.get_ticks() - update_timer >= 1000 / self._handler.config.UPDATE_RATE:
-                    update_timer += 1000 / self._handler.config.UPDATE_RATE
+                if pygame.time.get_ticks() - update_timer >= 1000 / Handler().config.UPDATE_RATE:
+                    update_timer += 1000 / Handler().config.UPDATE_RATE
                     # update game state
                     dt = (pygame.time.get_ticks() - last_update) / 1000
                     self.scene.update(dt)
@@ -94,16 +94,16 @@ class App:
                     control_nu += 1
                 if control_nu >= 100:
                     log.debug(f"Average updates per second: {round(len(control_ups) / sum(control_ups), 2)} "
-                              f"(target: {self._handler.config.UPDATE_RATE})")
+                              f"(target: {Handler().config.UPDATE_RATE})")
                     control_ups = []
                     control_nu = 0
 
-                time.sleep(last_update / 1000 + 1 / self._handler.config.UPDATE_RATE - pygame.time.get_ticks() / 1000)
+                time.sleep(last_update / 1000 + 1 / Handler().config.UPDATE_RATE - pygame.time.get_ticks() / 1000)
         except KeyboardInterrupt:
             log.info("App interrupted")
         finally:
             self.running = False
-            if self._handler.config.RENDER:
+            if Handler().config.RENDER:
                 self._render_thread.join()
             self.db.close()
             pygame.quit()
@@ -123,7 +123,7 @@ class App:
             self.display.screen.fill((0, 0, 0))
             self.scene.render(self.display)
             pygame.display.flip()
-            clock.tick(self._handler.config.FPS)
+            clock.tick(Handler().config.FPS)
 
 
 if __name__ == '__main__':

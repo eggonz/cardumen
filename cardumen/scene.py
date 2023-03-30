@@ -12,16 +12,14 @@ from cardumen.handler import Handler
 
 class PlaygroundScene:
 
-    def __init__(self, handler: Handler):
-        self._handler = handler
-
+    def __init__(self):
         self.layers = defaultdict(list)
 
-        water = WaterBg(handler, handler.config.WINDOW_SIZE)
+        water = WaterBg()
         self.layers[0].append(water)
-        for i in range(0, self._handler.config.n_fish):
-            w, h = handler.config.WINDOW_SIZE
-            fish = Fish(handler, PosRotScale(Vector2(w * random(), h * random())), cat=i % 7 + 1)
+        for i in range(0, Handler().config.n_fish):
+            w, h = Handler().config.WINDOW_SIZE
+            fish = Fish(PosRotScale(Vector2(w * random(), h * random())), cat=i % 7 + 1)
             self.layers[-1].append(fish)
 
     def update(self, dt: float) -> None:
@@ -31,18 +29,19 @@ class PlaygroundScene:
         :return:
         """
         for layer in sorted(self.layers, reverse=True):
+            width, height = Handler().config.WINDOW_SIZE
             for entity in self.layers[layer]:
                 entity.update(dt)
 
                 # wrap every entity position
-                if entity.prs.pos.x > self._handler.config.WINDOW_SIZE.x:
-                    entity.prs.pos.x -= self._handler.config.WINDOW_SIZE.x
+                if entity.prs.pos.x > width:
+                    entity.prs.pos.x -= width
                 elif entity.prs.pos.x < 0:
-                    entity.prs.pos.x += self._handler.config.WINDOW_SIZE.x
-                if entity.prs.pos.y > self._handler.config.WINDOW_SIZE.y:
-                    entity.prs.pos.y -= self._handler.config.WINDOW_SIZE.y
+                    entity.prs.pos.x += width
+                if entity.prs.pos.y > height:
+                    entity.prs.pos.y -= height
                 elif entity.prs.pos.y < 0:
-                    entity.prs.pos.y += self._handler.config.WINDOW_SIZE.y
+                    entity.prs.pos.y += height
 
     def render(self, display: Display) -> None:
         """

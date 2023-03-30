@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pygame import Vector2
-
 from cardumen.collision import Collider
 from cardumen.display import Display
 from cardumen.geometry import PosRotScale
@@ -10,14 +8,13 @@ from cardumen.sprite import Sprite
 
 
 class Entity:
-    def __init__(self, handler: Handler, prs: PosRotScale, sprite: Sprite = None):
+    def __init__(self, prs: PosRotScale, sprite: Sprite = None):
         """
         Create an Entity.
 
         :param prs: position, rotation, scale
         :param sprite: sprite to draw
         """
-        self._handler = handler
         self.prs = prs
         self.sprite = sprite
         self.colliders = []
@@ -38,7 +35,7 @@ class Entity:
         :return:
         """
         display.draw_sprite(self.sprite, self.prs)
-        if self._handler.config.DEBUG:
+        if Handler().config.DEBUG:
             for collider in self.colliders:
                 collider.render(display)
 
@@ -47,8 +44,9 @@ class Entity:
 
 
 class WaterBg(Entity):
-    def __init__(self, handler: Handler, screen_size: Vector2):
-        super().__init__(handler, PosRotScale(screen_size / 2), Sprite("assets/water.png"))
+    def __init__(self):
+        screen_size = Handler().config.WINDOW_SIZE
+        super().__init__(PosRotScale(screen_size / 2), Sprite("assets/water.png"))
         # fit screen
         self.sprite.apply_transform(scale=max(screen_size.x / self.sprite.width, screen_size.y / self.sprite.height))
 

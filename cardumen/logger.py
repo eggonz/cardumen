@@ -5,6 +5,8 @@ import sys
 from datetime import datetime
 from enum import Enum
 
+from cardumen.design_patterns import singleton
+
 
 class LogLevel(Enum):
     """
@@ -20,19 +22,7 @@ class LogLevel(Enum):
         return self.value <= other.value
 
 
-# # singleton
-# def singleton(cls):
-#     """Singleton decorator."""
-#     instances = {}
-#
-#     def getinstance(*args, **kwargs):
-#         if cls not in instances:
-#             instances[cls] = cls(*args, **kwargs)
-#         return instances[cls]
-#     return getinstance
-#
-#
-# @singleton
+@singleton
 class _Logger:
     """
     Class for logging.
@@ -74,12 +64,12 @@ class _Logger:
             self._log(LogLevel.CRITICAL, message)
 
 
-log = _Logger()
-
-
 def set_log_level(log_level: LogLevel):
-    log._log_level = log_level
+    _Logger()._log_level = log_level
 
 
 def set_log_file(log_file: LogLevel):
-    log._log_file = log_file
+    _Logger()._log_file = log_file
+
+
+log = _Logger()

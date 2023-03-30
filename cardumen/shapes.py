@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 import pygame
 from pygame import Vector2
 
