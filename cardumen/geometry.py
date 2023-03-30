@@ -60,15 +60,26 @@ class PosRotScale:
         """
         return PosRotScale(-self.pos, -self.rot, 1 / self.scale)
 
-    def apply(self, prs: PosRotScale) -> None:
+    def apply(self, transform: PosRotScale, pivot: PosRotScale = None) -> None:
         """
         Apply the transformation represented by another PosRotScale object to this object.
+        Optionally, the transformation can be applied around a pivot parent PosRotScale object.
+        If a pivot is present, the transformation is applied to self, but in the coordinate system of the pivot.
 
-        :param prs: transformation to apply
+        :param transform: transformation to apply
+        :param pivot: pivot to apply the transformation around
         """
-        self.pos += prs.pos
-        self.rot += prs.rot
-        self.scale *= prs.scale
+        if pivot is not None:
+            self.pos -= pivot.pos
+            self.rot -= pivot.rot
+            self.scale /= pivot.scale
+        self.pos += transform.pos
+        self.rot += transform.rot
+        self.scale *= transform.scale
+        if pivot is not None:
+            self.pos += pivot.pos
+            self.rot += pivot.rot
+            self.scale *= pivot.scale
 
     @property
     def rot_deg(self) -> float:

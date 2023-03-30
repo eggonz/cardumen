@@ -85,7 +85,7 @@ class Fish(Entity):
         def add_to_detection_canvas(other: Collider):
             if self.cat == 1:
                 poly2 = other.poly.clone()
-                poly2.prs.apply(self.view.poly.prs.inverse())
+                poly2.prs.apply(self.view.poly.prs.inverse(), pivot=self.view.poly.prs)
                 body_surf, rect = poly2.get_surface(return_rect=True)
                 topleft = Vector2(rect.topleft) - Vector2(self.view_rect.topleft)
                 for rep in utils.get_wraps():
@@ -109,7 +109,7 @@ class Fish(Entity):
 
         # update colliders
         poly1 = self.view.poly.clone()
-        poly1.prs.apply(self.view.poly.prs.inverse())
+        poly1.prs.apply(self.view.poly.prs.inverse(), pivot=self.view.poly.prs)
         self.view_rect = poly1.get_rect()
 
         self.view_passives = pygame.Surface(self.view_rect.size, pygame.SRCALPHA)
@@ -117,7 +117,7 @@ class Fish(Entity):
             collider.update(dt)
         if self.view.is_colliding() and self.cat == 1:
             poly1 = self.view.poly.clone()
-            poly1.prs.apply(self.view.poly.prs.inverse())
+            poly1.prs.apply(self.view.poly.prs.inverse(), pivot=self.view.poly.prs)
             view_surf = poly1.get_surface()
 
             view_surf.blit(self.view_passives, (0, 0))
