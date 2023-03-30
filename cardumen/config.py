@@ -1,8 +1,24 @@
 import json
+from argparse import Namespace
 
+import numpy as np
 from pygame import Vector2
 
 from cardumen.logger import LogLevel
+
+
+class DataConfig:
+    def __init__(self, path: str):
+        with open(path, 'r') as f:
+            config = json.load(f)
+
+        self.num_features = len(config['features'])
+        self.features = []
+        for feat in config['features']:
+            feat['name'] = feat['name']
+            feat['shape'] = tuple(feat['shape'])
+            feat['dtype'] = np.dtype(feat['dtype'])
+            self.features.append(Namespace(**feat))
 
 
 class Config:
@@ -20,6 +36,7 @@ class Config:
         self.WRAP = config['wrap']
         self.DB_PATH = config['dbPath']
         self.DB_BUFFER_SIZE = config['dbBufferSize']
+        self.DATA_CONFIG = DataConfig(config['dataConfig'])
         self.LOG_LEVEL = LogLevel[config['logLevel'].upper()]
         self.LOG_FILE = config['logFile']
         self.DEBUG = config['debug']

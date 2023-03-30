@@ -10,6 +10,7 @@
   "wrap": true,
   "dbPath": "cardumen.db",
   "dbBufferSize": 200,
+  "dataConfig": "data_config.json",
   "logLevel": "info",
   "logFile": "cardumen.log",
   "debug": false,

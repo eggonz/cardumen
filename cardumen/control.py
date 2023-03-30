@@ -17,7 +17,7 @@ class Agent:
     def __init__(self, actions: list[Action]):
         self.actions = actions
 
-    def act(self, state: np.ndarray) -> Action:
+    def act(self, state: list[np.ndarray]) -> Action:
         """
         Get action from agent.
         :param state: current state

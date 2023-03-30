@@ -97,8 +97,11 @@ class Fish(Entity):
 
         self.view.on_collision = add_to_detection_canvas
 
+        self.view_detect = None
+        self.view_state = np.empty((*self.view_projection.output_size, 3))
+
         # database
-        self.db_table = Table(Handler().db, f'fish{cat}')
+        self.db_table = Table(Handler().db, f'fish{cat}', Handler().config.DATA_CONFIG)
         self.db_table.create()
 
     def update(self, dt: float) -> None:
@@ -117,15 +120,15 @@ class Fish(Entity):
         for collider in self.colliders:
             collider.update(dt)
         if self.view.is_colliding() and self.cat == 1:
+            self.view_state = self.view_projection(utils.surf2arr(self.view_detect))
             if Handler().config.plot_collider:
-                arr = self.view_projection(utils.surf2arr(self.view_detect))
-                utils.plot_arr(arr)
+                utils.plot_arr(self.view_state)
 
         # update database
         self.db_table.add(time.time(), self.get_state())
 
-    def get_state(self) -> np.ndarray:
-        return np.array([*self.prs.pos, *self.vel])
+    def get_state(self) -> list[np.ndarray]:
+        return [np.array([*self.prs.pos, *self.vel]), self.view_state]
 
     def __repr__(self):
         return f'Fish(cat={self.cat})'

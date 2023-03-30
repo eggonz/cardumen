@@ -3,18 +3,19 @@
   "height": 500,
   "title": "cardumen dev",
   "fps": 30,
-  "updateRate": 25,
+  "updateRate": 40,
   "windowResizable": false,
   "windowFullscreen": false,
   "windowBorderless": false,
   "wrap": true,
   "dbPath": "cardumen_dev.db",
   "dbBufferSize": 2000,
+  "dataConfig": "data_config.json",
   "logLevel": "debug",
   "logFile": "dev.log",
   "debug": true,
   "testing": true,
   "render": true,
   "paramNFish": 5,
-  "paramPlotCollider": true
+  "paramPlotCollider": false
 }
