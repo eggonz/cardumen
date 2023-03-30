@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 
 from pygame import Vector2
@@ -10,6 +12,7 @@ def rad2deg(rad: float) -> float:
     :param rad: angle in radians
     :return: angle in degrees
     """
+    rad %= 2 * math.pi
     return rad * 360 / 2.0 / math.pi
 
 
@@ -20,6 +23,7 @@ def deg2rad(deg: float) -> float:
     :param deg: angle in degrees
     :return: angle in radians
     """
+    deg %= 360
     return deg * 2.0 * math.pi / 360
 
 
@@ -40,6 +44,32 @@ class PosRotScale:
         self.rot = rot
         self.scale = scale
 
+    def clone(self) -> PosRotScale:
+        """
+        Create a copy of this object.
+
+        :return: copy of this object
+        """
+        return PosRotScale(self.pos, self.rot, self.scale)
+
+    def inverse(self) -> PosRotScale:
+        """
+        Create a new PosRotScale object representing the inverse transformation of this object.
+
+        :return: inverse transformation
+        """
+        return PosRotScale(-self.pos, -self.rot, 1 / self.scale)
+
+    def apply(self, prs: PosRotScale) -> None:
+        """
+        Apply the transformation represented by another PosRotScale object to this object.
+
+        :param prs: transformation to apply
+        """
+        self.pos += prs.pos
+        self.rot += prs.rot
+        self.scale *= prs.scale
+
     @property
     def rot_deg(self) -> float:
         """
@@ -49,5 +79,8 @@ class PosRotScale:
         """
         return rad2deg(self.rot)
 
+    def __eq__(self, other):
+        return self.pos == other.pos and self.rot == other.rot and self.scale == other.scale
+
     def __repr__(self):
-        return f'PosRotScale(pos={self.pos},rot={self.rot},scale={self.scale})'
+        return f'PosRotScale(pos={self.pos}, rot={self.rot}, scale={self.scale})'
