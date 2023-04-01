@@ -1,0 +1,14 @@
+{
+  "features": [
+    {
+      "name": "feat1",
+      "shape": [4],
+      "dtype": "float32"
+    },
+    {
+      "name": "feat2",
+      "shape": [145, 145, 3],
+      "dtype": "float32"
+    }
+  ]
+}

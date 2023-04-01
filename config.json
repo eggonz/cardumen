@@ -1,0 +1,19 @@
+{
+  "width": 1000,
+  "height": 600,
+  "title": "cardumen",
+  "fps": 30,
+  "updateRate": 100,
+  "windowResizable": false,
+  "windowFullscreen": false,
+  "windowBorderless": false,
+  "wrap": true,
+  "dbPath": "cardumen.db",
+  "dbBufferSize": 200,
+  "dataConfig": "data_config.json",
+  "logLevel": "info",
+  "logFile": "cardumen.log",
+  "debug": false,
+  "testing": false,
+  "render": true
+}

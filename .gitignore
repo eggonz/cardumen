@@ -1,2 +1,5 @@
 /venv/
 /.idea/
+/res/
+*.db
+*.log
